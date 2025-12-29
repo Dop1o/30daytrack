@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>30-дневный челлендж трекер — создай и отслеживай свои привычки</title>
+    
+    <!-- Мета-теги для SEO -->
+    <meta name="description" content="Создавайте и отслеживайте свои 30-дневные челленджи. Сохраняйте прогресс, получайте статистику и достигайте целей.">
+    <meta name="keywords" content="трекер привычек, 30-дневный челлендж, самосовершенствование, привычки, цели, планирование, прогресс">
+    <meta name="author" content="30-дневный трекер">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
+    <!-- Стили -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    
+    <style>
+
+        /* Убираем синюю рамку при фокусе у логотипа в хедере */
+        nav a:first-child:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Или более специфично: */
+        nav a.text-xl:focus,
+        nav a.text-xl:hover {
+            outline: none !important;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        .tracker-container {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            print-color-adjust: exact;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in { 
+            animation: fadeIn 0.3s ease-out; 
+        }
+        
+        .sr-only { 
+            position: absolute; 
+            width: 1px; 
+            height: 1px;
+            padding: 0; 
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 10px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        /* Адаптивные стили */
+        @media (max-width: 480px) {
+            .copy-icon-btn {
+                width: 8px !important;
+                height: 8px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            #card-number, #ton-wallet {
+                font-size: 0.75rem !important;
+                padding: 0.5rem !important;
+            }
+        }
+
+        /* Стили для трекера */
+        .day-cell {
+            transition: all 0.2s ease;
+        }
+        
+        .day-cell:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Адаптивная сетка календаря */
+        .calendar-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+        
+        /* Стили для списка трекеров */
+        .tracker-list-item {
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .tracker-list-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tracker-list-item.active {
+            border-left-color: #3b82f6;
+            background-color: #f0f9ff;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Статистика */
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Адаптивные модальные окна */
+        @media (max-width: 640px) {
+            .modal-responsive {
+                margin: 0.5rem !important;
+                padding: 1rem !important;
+                max-height: calc(100vh - 1rem);
+                overflow-y: auto;
+            }
+            
+            .modal-responsive .p-6 {
+                padding: 1rem !important;
+            }
+            
+            .modal-responsive .text-2xl {
+                font-size: 1.25rem !important;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .day-cell {
+                min-height: 5rem !important;
+                padding: 0.5rem !important;
+            }
+            
+            .check-box {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+            
+            .tracker-container {
+                padding: 1rem !important;
+            }
+            
+            .responsive-heading {
+                font-size: 1.5rem !important;
+            }
+            
+            .responsive-subheading {
+                font-size: 1.125rem !important;
+            }
+            
+            .responsive-text {
+                font-size: 0.875rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.375rem;
+            }
+            
+            .day-cell {
+                min-height: 4.5rem !important;
+                padding: 0.375rem !important;
+            }
+            
+            .check-box {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+            
+            .goal-section {
+                padding: 1rem !important;
+            }
+            
+            .btn-responsive {
+                padding: 0.75rem 1rem !important;
+                font-size: 1rem !important;
+            }
+        }
+        
+        @media (min-width: 641px) and (max-width: 768px) {
+            .calendar-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.75rem;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .calendar-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 1rem;
+            }
+        }
+        
+        /* Для PDF - фиксированные стили */
+        .pdf-template {
+            width: 794px !important;
+            height: 1123px !important;
+            padding: 40px !important;
+            background: white !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            box-sizing: border-box !important;
+        }
+        
+        .pdf-calendar-grid {
+            display: grid !important;
+            grid-template-columns: repeat(6, 1fr) !important;
+            gap: 8px !important;
+            margin: 20px 0 !important;
+        }
+        
+        .pdf-day-cell {
+            border: 2px solid !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            text-align: center !important;
+            background: white !important;
+            min-height: 60px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+        
+        .pdf-check-box {
+            width: 30px !important;
+            height: 30px !important;
+            margin: 0 auto !important;
+            border: 2px solid !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        /* Плавная прокрутка */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Оптимизация для тач-устройств */
+        @media (hover: none) and (pointer: coarse) {
+            .day-cell,
+            button,
+            input,
+            select,
+            textarea,
+            .color-label,
+            .tracker-list-item {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+        }
+        
+        /* Улучшение доступности фокуса */
+        *:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Анимация загрузки */
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Стили для пустого состояния */
+        .empty-state {
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+        
+        .empty-state:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <nav class="bg-white shadow-sm py-4 sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <a href="index.html" class="text-xl sm:text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors flex items-center">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    30-дневный трекер
+                </a>
+                <div class="hidden md:flex gap-4 lg:gap-6">
+                    <a href="#form-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50">Создать трекер</a>
+                    <a href="#my-trackers-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50">Мои трекеры</a>
+                    <a href="#preview-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50">Превью</a>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Мобильное меню -->
+        <div id="mobile-menu" class="md:hidden mt-3 hidden bg-white rounded-lg shadow-md p-4 mx-4">
+            <div class="flex flex-col gap-1">
+                <a href="#form-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center">
+                    <i class="fas fa-plus-circle mr-3 text-blue-500"></i>
+                    Создать трекер
+                </a>
+                <a href="#my-trackers-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center">
+                    <i class="fas fa-list mr-3 text-green-500"></i>
+                    Мои трекеры
+                </a>
+                <a href="#preview-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center">
+                    <i class="fas fa-eye mr-3 text-purple-500"></i>
+                    Превью
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Герой секция -->
+    <header class="bg-gradient-to-br from-blue-50 to-cyan-50 py-12 md:py-20 lg:py-24">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 responsive-heading">
+                Создай свой челлендж на 30 дней
+            </h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto px-2 responsive-subheading">
+                Создавай трекеры, сохраняй прогресс и достигай целей
+            </p>
+        </div>
+    </header>
+
+    <!-- Быстрые действия -->
+    <section class="py-8 md:py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#form-heading" 
+                   class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-base md:text-lg hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl text-center">
+                    <i class="fas fa-plus-circle mr-2"></i>Создать новый трекер
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Мои трекеры -->
+    <section class="py-10 md:py-14 lg:py-16 bg-gray-50" id="my-trackers-heading">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center mb-8 md:mb-12 responsive-heading">
+                Мои трекеры
+            </h2>
+            
+            <div id="trackers-list-container" class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Трекеры будут добавляться динамически -->
+                </div>
+                
+                <div id="empty-trackers-state" class="text-center py-12 empty-state">
+                    <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-chart-line text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">У вас еще нет трекеров</h3>
+                    <p class="text-gray-500 mb-6">Создайте свой первый трекер и начните отслеживать прогресс</p>
+                    <a href="#form-heading" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+                        <i class="fas fa-plus-circle mr-2"></i>Создать первый трекер
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div id="statistics-container" class="hidden">
+                <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4 md:mb-6">Статистика</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Всего трекеров</p>
+                                <p id="total-trackers" class="text-2xl md:text-3xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Активные трекеры</p>
+                                <p id="active-trackers" class="text-2xl md:text-3xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-chart-pie text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Средний прогресс</p>
+                                <p id="average-progress" class="text-2xl md:text-3xl font-bold text-gray-900">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-trophy text-orange-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm">Завершено дней</p>
+                                <p id="completed-days" class="text-2xl md:text-3xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Форма создания -->
+    <section class="py-10 md:py-14 lg:py-16 bg-white" id="form-heading">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center mb-8 md:mb-12 responsive-heading">
+                Создай новый трекер
+            </h2>
+            
+            <form id="tracker-form" class="space-y-6" novalidate>
+                <div>
+                    <label for="challenge-name" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
+                        Название твоего челленджа <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="challenge-name" name="challenge-name"
+                           placeholder="Например: Читать каждый день"
+                           required maxlength="100"
+                           class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base">
+                    <span id="challenge-name-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label for="category" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
+                        Категория <span class="text-red-500">*</span>
+                    </label>
+                    <select id="category" name="category" required
+                            class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base">
+                        <option value="">Выбери категорию</option>
+                        <option value="health">Здоровье & Спорт</option>
+                        <option value="learning">Обучение & Рост</option>
+                        <option value="productivity">Продуктивность</option>
+                        <option value="mindfulness">Осознанность & Психология</option>
+                        <option value="other">Другое</option>
+                    </select>
+                    <span id="category-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label for="goal" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
+                        Моя цель на 30 дней <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="goal" name="goal" rows="4"
+                              placeholder="Например: Прочитать 300 страниц, заниматься спортом 30 минут в день"
+                              required maxlength="500"
+                              class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none text-sm md:text-base"></textarea>
+                    <span id="goal-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm md:text-base font-medium text-gray-700 mb-3">
+                        Цвет трекера
+                    </label>
+                    <div class="flex flex-wrap gap-3 md:gap-4 justify-center">
+                        <input type="radio" id="color-blue" name="color" value="blue" class="hidden" checked>
+                        <label for="color-blue" class="color-label w-10 h-10 md:w-12 md:h-12 bg-blue-500 rounded-full cursor-pointer hover:scale-110 transition-all border-4 border-transparent" tabindex="0" title="Синий"></label>
+
+                        <input type="radio" id="color-green" name="color" value="green" class="hidden">
+                        <label for="color-green" class="color-label w-10 h-10 md:w-12 md:h-12 bg-green-500 rounded-full cursor-pointer hover:scale-110 transition-all border-4 border-transparent" tabindex="0" title="Зеленый"></label>
+
+                        <input type="radio" id="color-purple" name="color" value="purple" class="hidden">
+                        <label for="color-purple" class="color-label w-10 h-10 md:w-12 md:h-12 bg-purple-500 rounded-full cursor-pointer hover:scale-110 transition-all border-4 border-transparent" tabindex="0" title="Фиолетовый"></label>
+
+                        <input type="radio" id="color-orange" name="color" value="orange" class="hidden">
+                        <label for="color-orange" class="color-label w-10 h-10 md:w-12 md:h-12 bg-orange-500 rounded-full cursor-pointer hover:scale-110 transition-all border-4 border-transparent" tabindex="0" title="Оранжевый"></label>
+
+                        <input type="radio" id="color-pink" name="color" value="pink" class="hidden">
+                        <label for="color-pink" class="color-label w-10 h-10 md:w-12 md:h-12 bg-pink-500 rounded-full cursor-pointer hover:scale-110 transition-all border-4 border-transparent" tabindex="0" title="Розовый"></label>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 md:py-4 px-6 rounded-lg text-base md:text-lg hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed btn-responsive">
+                    <span class="btn-text">
+                        <i class="fas fa-plus-circle mr-2"></i>Создать мой трекер!
+                    </span>
+                    <span class="btn-loading hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Создание...
+                    </span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Превью -->
+    <section class="py-10 md:py-14 lg:py-16 bg-gray-50" id="preview-heading">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center">Предпросмотр трекера</h2>
+            <div id="pdf-preview" class="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12 min-h-[400px] flex items-center justify-center">
+                <p class="text-gray-400 text-lg sm:text-xl text-center px-4">
+                    <i class="fas fa-magic text-gray-300 text-2xl mb-2 block"></i>
+                    Твой трекер появится здесь после создания
+                </p>
+            </div>
+            <div id="preview-actions" class="mt-6 flex flex-col sm:flex-row gap-4 justify-center hidden">
+                <button id="download-pdf-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 btn-responsive">
+                    <i class="fas fa-download mr-2"></i>Скачать PDF
+                </button>
+                <button id="copy-tracker-link-btn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 btn-responsive">
+                    <i class="fas fa-link mr-2"></i>Копировать ссылку
+                </button>
+                <button id="save-changes-btn"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 btn-responsive">
+                    <i class="fas fa-save mr-2"></i>Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="bg-gray-900 text-gray-300 py-10 md:py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-6 md:mb-8">
+                    <h3 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4">30-дневный челлендж трекер</h3>
+                    <p class="text-gray-400 text-sm md:text-base">Инструмент для формирования полезных привычек и достижения целей</p>
+                </div>
+                
+                <nav class="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-8">
+                    <button onclick="openModal('about-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2">О проекте</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('privacy-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2">Политика конфиденциальности</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('contact-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2">Связаться</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('support-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2">Поддержать проект</button>
+                </nav>
+                
+                <div class="text-center">
+                    <p class="text-xs md:text-sm text-gray-500 mb-2">
+                        © 2025 30-дневный челлендж трекер. Все права защищены.
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        Инструмент для личного использования. Все данные хранятся локально.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальные окна -->
+    <!-- Модалка о проекте -->
+    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">О проекте</h2>
+                    <button onclick="closeModal('about-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                            <i class="fas fa-rocket text-blue-600 text-2xl md:text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 text-center mb-3 md:mb-4">30-дневный челлендж трекер</h3>
+                        <p class="text-gray-600 text-center text-sm md:text-base mb-4 md:mb-6">
+                            Простой и эффективный инструмент для формирования полезных привычек
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                        <div class="bg-blue-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base">
+                                <i class="fas fa-bullseye text-blue-600 mr-2"></i> Фокус на цели
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm">Помогает сфокусироваться на одной важной цели на 30 дней</p>
+                        </div>
+                        <div class="bg-green-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base">
+                                <i class="fas fa-chart-line text-green-600 mr-2"></i> Визуальный прогресс
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm">Красивый трекер мотивирует продолжать каждый день</p>
+                        </div>
+                        <div class="bg-purple-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base">
+                                <i class="fas fa-heart text-purple-600 mr-2"></i> Основано на науке
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm">21-30 дней достаточно для формирования новой привычки</p>
+                        </div>
+                        <div class="bg-orange-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base">
+                                <i class="fas fa-lock text-orange-600 mr-2"></i> Конфиденциальность
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm">Все данные хранятся локально в вашем браузере</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6">
+                    <button onclick="closeModal('about-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all">
+                        Понятно
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка политики конфиденциальности -->
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Политика конфиденциальности</h2>
+                    <button onclick="closeModal('privacy-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-grow">
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base">📁 Локальное хранение</h4>
+                            <p class="text-gray-600 text-xs md:text-sm">Все данные хранятся в вашем браузере. Никакая информация не отправляется на серверы.</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base">🔒 Конфиденциальность</h4>
+                            <p class="text-gray-600 text-xs md:text-sm">Мы не собираем и не обрабатываем ваши персональные данные.</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base">📄 Генерация PDF</h4>
+                            <p class="text-gray-600 text-xs md:text-sm">PDF файлы создаются локально и сразу сохраняются на ваше устройство.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6">
+                    <button onclick="closeModal('privacy-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all">
+                        Принимаю условия
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка контактов -->
+    <div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Связаться</h2>
+                    <button onclick="closeModal('contact-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                            <i class="fas fa-envelope text-blue-600 text-2xl md:text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Есть вопросы?</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Свяжитесь удобным способом</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg sm:rounded-xl border border-blue-100 p-4 md:p-6">
+                        <h4 class="font-semibold text-blue-900 mb-3 md:mb-4 text-base md:text-lg">
+                            <i class="fas fa-user-circle text-blue-600 mr-2"></i> Контакты разработчика
+                        </h4>
+                        
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex items-center">
+                                <div class="w-8 text-center">
+                                    <i class="fas fa-user text-blue-500"></i>
+                                </div>
+                                <div class="ml-3 md:ml-4">
+                                    <p class="text-gray-700 font-medium text-sm md:text-base">Исмаил</p>
+                                    <p class="text-gray-600 text-xs md:text-sm">Frontend разработчик</p>
+                                </div>
+                            </div>
+                            
+                            <a href="mailto:ismailgejbatov@gmail.com" class="block no-underline">
+                                <div class="flex items-center p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors group">
+                                    <div class="w-8 text-center">
+                                        <i class="fas fa-envelope text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3 md:ml-4 flex-grow">
+                                        <p class="text-gray-700 font-medium text-sm md:text-base">Email</p>
+                                        <p class="text-blue-600 group-hover:text-blue-800 text-xs md:text-sm break-all">
+                                            ismailgejbatov@gmail.com
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://t.me/prosto_isko" target="_blank" class="block no-underline">
+                                <div class="flex items-center p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors group">
+                                    <div class="w-8 text-center">
+                                        <i class="fab fa-telegram text-blue-500"></i>
+                                    </div>
+                                    <div class="ml-3 md:ml-4 flex-grow">
+                                        <p class="text-gray-700 font-medium text-sm md:text-base">Telegram</p>
+                                        <p class="text-blue-600 group-hover:text-blue-800 text-xs md:text-sm">
+                                            @prosto_isko
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6">
+                    <button onclick="closeModal('contact-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка поддержки проекта -->
+    <div id="support-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Поддержать проект</h2>
+                    <button onclick="closeModal('support-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+                            <i class="fas fa-heart text-green-600 text-2xl md:text-3xl"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Поддержите развитие проекта</h3>
+                        <p class="text-gray-600 text-sm md:text-base">Ваша поддержка помогает улучшать трекер и добавлять новые функции</p>
+                    </div>
+
+                    
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border border-green-100 p-4 md:p-6">
+                            <h4 class="font-semibold text-green-900 mb-3 md:mb-4 text-base md:text-lg">
+                                <i class="fas fa-donate text-green-600 mr-2"></i> Способы поддержки
+                            </h4>
+                            
+                            <div class="space-y-3 md:space-y-4">
+                                <!-- Банковская карта -->
+                                <div class="bg-white rounded-lg p-3 hover:bg-green-50 transition-colors">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-8 text-center">
+                                            <i class="fas fa-credit-card text-green-500"></i>
+                                        </div>
+                                        <div class="ml-3 md:ml-4 flex-grow">
+                                            <p class="text-gray-700 font-medium text-sm md:text-base">Банковская карта</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-green-600 font-mono text-sm md:text-base select-all flex-grow bg-green-50 px-3 py-2 rounded truncate" id="card-number">
+                                            2202 2055 7513 3944
+                                        </p>
+                                        <button onclick="copyCardNumber()" 
+                                                class="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors"
+                                                title="Копировать номер карты">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- TON кошелек -->
+                                <div class="bg-white rounded-lg p-3 hover:bg-green-50 transition-colors">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-8 text-center">
+                                            <i class="fas fa-coins text-blue-500"></i>
+                                        </div>
+                                        <div class="ml-3 md:ml-4 flex-grow">
+                                            <p class="text-gray-700 font-medium text-sm md:text-base">TON кошелек</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-gray-600 text-xs font-mono select-all flex-grow bg-gray-50 px-3 py-2 rounded break-all" id="ton-wallet">
+                                            UQB650sDu-0vZiBrzHvoVRmxmvTNEweRQ02qijkKKmDk3wC2
+                                        </p>
+                                        <button onclick="copyTonWallet()" 
+                                                class="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors"
+                                                title="Копировать TON адрес">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center text-xs md:text-sm text-gray-500">
+                            <p><i class="fas fa-info-circle text-blue-500 mr-1"></i> Любая сумма помогает развитию проекта</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6">
+                    <button onclick="closeModal('support-modal')" 
+                            class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-green-700 hover:to-emerald-700 transition-all">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка подтверждения удаления -->
+    <div id="delete-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Удалить трекер</h2>
+                    <button onclick="closeModal('delete-tracker-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-trash-alt text-red-600 text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Вы уверены?</h3>
+                        <p class="text-gray-600" id="delete-tracker-message">Это действие нельзя отменить. Все данные трекера будут удалены.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 flex gap-4">
+                    <button onclick="closeModal('delete-tracker-modal')" 
+                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded-lg text-sm md:text-base transition-all">
+                        Отмена
+                    </button>
+                    <button id="confirm-delete-btn"
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base transition-all">
+                        Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка ссылки на трекер -->
+    <div id="share-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full fade-in modal-responsive">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Поделиться трекером</h2>
+                    <button onclick="closeModal('share-tracker-modal')" class="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-link text-blue-600 text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Ссылка на трекер</h3>
+                        <p class="text-gray-600 mb-4">Сохраните эту ссылку, чтобы всегда иметь доступ к своему трекеру:</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <p id="tracker-share-url" class="text-blue-600 font-mono text-sm break-all"></p>
+                        </div>
+                        
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="copyShareUrl()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center">
+                                <i class="fas fa-copy mr-2"></i>Копировать
+                            </button>
+                            <a id="open-tracker-link" href="#" target="_blank"
+                               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center no-underline">
+                                <i class="fas fa-external-link-alt mr-2"></i>Открыть
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6">
+                    <button onclick="closeModal('share-tracker-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="simple-notification" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300 text-sm hidden">
+        <span id="notification-text"></span>
+    </div>
+
+    <!-- Основной JavaScript -->
+    <script>
+        // Конфигурация
+        const CONFIG = {
+            colorMap: {
+                blue: { hex: '#3b82f6', name: 'Синий' },
+                green: { hex: '#10b981', name: 'Зеленый' },
+                purple: { hex: '#8b5cf6', name: 'Фиолетовый' },
+                orange: { hex: '#f97316', name: 'Оранжевый' },
+                pink: { hex: '#ec4899', name: 'Розовый' }
+            },
+            storageKey: '30day_trackers_v2',
+            maxTrackers: 50
+        };
+
+        // Утилиты
+        const Utils = {
+            sanitizeHtml(str) {
+                if (typeof str !== 'string') return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+            
+            sanitizeText(str, maxLength = 1000) {
+                if (typeof str !== 'string') return '';
+                return str.trim().slice(0, maxLength).replace(/[<>]/g, '');
+            },
+            
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            },
+            
+            formatDate(date) {
+                return new Date(date).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            },
+            
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('simple-notification');
+                const notificationText = document.getElementById('notification-text');
+                
+                if (!notification || !notificationText) return;
+                
+                notificationText.textContent = message;
+                
+                // Цвет в зависимости от типа
+                if (type === 'error') {
+                    notification.style.backgroundColor = '#ef4444';
+                } else if (type === 'warning') {
+                    notification.style.backgroundColor = '#f59e0b';
+                } else {
+                    notification.style.backgroundColor = '#1f2937';
+                }
+                
+                notification.classList.remove('hidden');
+                notification.style.opacity = '1';
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        notification.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            },
+            
+            copyToClipboard(text) {
+                if (navigator.clipboard) {
+                    return navigator.clipboard.writeText(text)
+                        .then(() => true)
+                        .catch(() => this.copyFallback(text));
+                } else {
+                    return this.copyFallback(text);
+                }
+            },
+            
+            copyFallback(text) {
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    return true;
+                } catch (err) {
+                    console.error('Ошибка копирования:', err);
+                    return false;
+                }
+            },
+            
+            getTrackerUrl(trackerId) {
+                return `${window.location.origin}${window.location.pathname}#tracker-${trackerId}`;
+            },
+            
+            scrollToTracker(trackerId) {
+                const element = document.getElementById(`tracker-${trackerId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        };
+
+        // Хранилище трекеров
+        const TrackerStorage = {
+            getTrackers() {
+                try {
+                    const data = localStorage.getItem(CONFIG.storageKey);
+                    if (!data) return [];
+                    
+                    const trackers = JSON.parse(data);
+                    return Array.isArray(trackers) ? trackers : [];
+                } catch (error) {
+                    console.error('Ошибка загрузки трекеров:', error);
+                    return [];
+                }
+            },
+            
+            saveTrackers(trackers) {
+                try {
+                    // Ограничиваем количество трекеров
+                    if (trackers.length > CONFIG.maxTrackers) {
+                        trackers = trackers.slice(0, CONFIG.maxTrackers);
+                        Utils.showNotification(`Достигнут лимит трекеров (${CONFIG.maxTrackers})`, 'warning');
+                    }
+                    
+                    localStorage.setItem(CONFIG.storageKey, JSON.stringify(trackers));
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка сохранения трекеров:', error);
+                    Utils.showNotification('Ошибка сохранения данных', 'error');
+                    return false;
+                }
+            },
+            
+            saveTracker(tracker) {
+                const trackers = this.getTrackers();
+                
+                // Проверяем, существует ли уже трекер с таким ID
+                const existingIndex = trackers.findIndex(t => t.id === tracker.id);
+                
+                if (existingIndex >= 0) {
+                    // Обновляем существующий трекер
+                    trackers[existingIndex] = tracker;
+                } else {
+                    // Добавляем новый трекер
+                    tracker.createdAt = tracker.createdAt || new Date().toISOString();
+                    tracker.updatedAt = new Date().toISOString();
+                    trackers.unshift(tracker); // Добавляем в начало
+                }
+                
+                return this.saveTrackers(trackers);
+            },
+            
+            deleteTracker(trackerId) {
+                const trackers = this.getTrackers();
+                const filteredTrackers = trackers.filter(t => t.id !== trackerId);
+                return this.saveTrackers(filteredTrackers);
+            },
+            
+            getTracker(trackerId) {
+                const trackers = this.getTrackers();
+                return trackers.find(t => t.id === trackerId) || null;
+            },
+            
+            updateTrackerDays(trackerId, checkedDays) {
+                const tracker = this.getTracker(trackerId);
+                if (!tracker) return false;
+                
+                tracker.checkedDays = checkedDays;
+                tracker.updatedAt = new Date().toISOString();
+                tracker.progress = Math.round((checkedDays.length / 30) * 100);
+                
+                return this.saveTracker(tracker);
+            }
+        };
+
+        // Генератор трекеров
+        const TrackerGenerator = {
+            generateTrackerHTML(data, forPDF = false) {
+                const color = CONFIG.colorMap[data.color] || CONFIG.colorMap.blue;
+                const categoryNames = {
+                    health: 'Здоровье & Спорт',
+                    learning: 'Обучение & Рост',
+                    productivity: 'Продуктивность',
+                    mindfulness: 'Осознанность & Психология',
+                    other: 'Другое'
+                };
+                
+                const checkedDays = data.checkedDays || [];
+                const progress = data.progress || 0;
+
+                if (forPDF) {
+                    // HTML для PDF
+                    let daysGrid = '';
+                    for (let day = 1; day <= 30; day++) {
+                        const isChecked = checkedDays.includes(day);
+                        const cellBorderColor = isChecked ? color.hex : '#e5e7eb';
+                        const checkBoxBorderColor = isChecked ? color.hex : '#d1d5db';
+                        const checkBoxBgColor = isChecked ? color.hex : 'transparent';
+                        
+                        daysGrid += `
+                            <div class="pdf-day-cell" style="border-color: ${cellBorderColor} !important;">
+                                <div style="font-size: 11px !important; font-weight: 600 !important; color: #6b7280 !important; margin-bottom: 4px !important;">День ${day}</div>
+                                <div class="pdf-check-box" style="border-color: ${checkBoxBorderColor} !important; background-color: ${checkBoxBgColor} !important;">
+                                    ${isChecked ? 
+                                        '<svg style="width: 16px !important; height: 16px !important; color: white !important;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' 
+                                        : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="pdf-template">
+                            <div style="border-bottom: 3px solid ${color.hex} !important; padding-bottom: 16px !important; margin-bottom: 24px !important; text-align: center !important;">
+                                <h1 style="font-size: 24px !important; font-weight: 700 !important; margin-bottom: 8px !important; color: ${color.hex} !important; word-break: break-word !important;">${Utils.sanitizeHtml(data.name)}</h1>
+                                <p style="color: #4b5563 !important; font-size: 16px !important;">${Utils.sanitizeHtml(categoryNames[data.category] || '')}</p>
+                                <p style="color: #6b7280 !important; font-size: 14px !important; margin-top: 4px !important;">Прогресс: ${progress}%</p>
+                            </div>
+                            
+                            <div style="background-color: ${color.hex}15 !important; padding: 16px !important; border-radius: 0.5rem !important; margin-bottom: 24px !important;">
+                                <h2 style="font-size: 18px !important; font-weight: 600 !important; margin-bottom: 8px !important; color: ${color.hex} !important;">Моя цель на 30 дней:</h2>
+                                <p style="color: #374151 !important; line-height: 1.5 !important; font-size: 14px !important; white-space: pre-wrap !important;">${Utils.sanitizeHtml(data.goal)}</p>
+                            </div>
+                            
+                            <div class="pdf-calendar-grid">
+                                ${daysGrid}
+                            </div>
+                            
+                            <div style="text-align: center !important; color: #6b7280 !important; font-size: 12px !important; margin-top: 24px !important; padding-top: 16px !important; border-top: 1px solid #e5e7eb !important;">
+                                <p style="margin-bottom: 4px !important;">Отмечай каждый день, когда выполнил свою цель!</p>
+                                <p>Создано: ${Utils.formatDate(data.createdAt)} • Обновлено: ${Utils.formatDate(data.updatedAt)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // HTML для сайта
+                    let daysGrid = '';
+                    for (let day = 1; day <= 30; day++) {
+                        const isChecked = checkedDays.includes(day);
+                        const cellBorderColor = isChecked ? color.hex : '#e5e7eb';
+                        const checkBoxBorderColor = isChecked ? color.hex : '#d1d5db';
+                        const checkBoxBgColor = isChecked ? color.hex : 'transparent';
+                        const iconDisplay = isChecked ? 'block' : 'none';
+                        
+                        daysGrid += `
+                            <div class="day-cell border-2 cursor-pointer hover:shadow-md transition-shadow bg-white" 
+                                data-day="${day}" 
+                                data-tracker-id="${data.id}"
+                                style="min-height: 5rem; border-radius: 0.5rem; padding: 0.5rem; text-align: center; border-color: ${cellBorderColor};">
+                                <div class="text-xs font-semibold text-gray-500 mb-2">День ${day}</div>
+                                <div class="check-box w-10 h-10 mx-auto border-2 rounded-lg flex items-center justify-center" 
+                                    style="border-color: ${checkBoxBorderColor}; background-color: ${checkBoxBgColor}; border-radius: 0.5rem;">
+                                    <i class="fas fa-check text-white text-sm" style="display: ${iconDisplay};"></i>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="tracker-container p-4 sm:p-6 md:p-8" id="tracker-${data.id}" style="max-width: 100%; margin: 0 auto; font-family: -apple-system, sans-serif;">
+                            <div class="header mb-4 sm:mb-6 text-center" style="border-bottom: 3px solid ${color.hex}; padding-bottom: 0.75rem sm:1rem;">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-left flex-1" style="color: ${color.hex};">${Utils.sanitizeHtml(data.name)}</h1>
+                                    <div class="flex gap-2">
+                                        <button onclick="App.openTracker('${data.id}')" class="text-gray-500 hover:text-blue-600 p-2" title="Открыть в полном режиме">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                        <button onclick="App.shareTracker('${data.id}')" class="text-gray-500 hover:text-green-600 p-2" title="Поделиться">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button onclick="App.deleteTrackerPrompt('${data.id}')" class="text-gray-500 hover:text-red-600 p-2" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-gray-600 text-sm sm:text-base">${Utils.sanitizeHtml(categoryNames[data.category] || '')}</p>
+                                    <p class="text-gray-500 text-sm">Прогресс: <span class="font-bold">${progress}%</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="progress-bar bg-gray-200">
+                                    <div class="progress-fill" style="width: ${progress}%; background-color: ${color.hex};"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>${checkedDays.length} из 30 дней</span>
+                                    <span>${progress}%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="goal-section mb-4 sm:mb-6 p-3 sm:p-4 md:p-6 rounded-lg" style="background-color: ${color.hex}15;">
+                                <h2 class="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-3" style="color: ${color.hex};">Моя цель на 30 дней:</h2>
+                                <p class="text-gray-700 text-sm sm:text-base whitespace-pre-wrap">${Utils.sanitizeHtml(data.goal)}</p>
+                            </div>
+                            
+                            <div class="calendar-grid">
+                                ${daysGrid}
+                            </div>
+                            
+                            <div class="footer mt-4 sm:mt-6 pt-4 border-t border-gray-200 text-center text-gray-500 text-xs sm:text-sm">
+                                <p class="mb-2">Отмечай каждый день, когда выполнил свою цель!</p>
+                                <div class="flex justify-between">
+                                    <p>Создан: ${Utils.formatDate(data.createdAt)}</p>
+                                    <p>Обновлен: ${Utils.formatDate(data.updatedAt)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            
+            generateTrackerListItem(tracker) {
+                const color = CONFIG.colorMap[tracker.color] || CONFIG.colorMap.blue;
+                const categoryNames = {
+                    health: 'Здоровье & Спорт',
+                    learning: 'Обучение & Рост',
+                    productivity: 'Продуктивность',
+                    mindfulness: 'Осознанность & Психология',
+                    other: 'Другое'
+                };
+                
+                const checkedDays = tracker.checkedDays || [];
+                const progress = tracker.progress || 0;
+                const daysCompleted = checkedDays.length;
+                
+                return `
+                    <div class="tracker-list-item bg-white rounded-xl shadow-md p-4 md:p-6 cursor-pointer hover:shadow-lg" 
+                         onclick="App.openTracker('${tracker.id}')"
+                         data-tracker-id="${tracker.id}">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background-color: ${color.hex}20;">
+                                    <i class="fas fa-chart-line" style="color: ${color.hex};"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 text-sm md:text-base truncate max-w-[200px]">${Utils.sanitizeHtml(tracker.name)}</h3>
+                                    <p class="text-gray-500 text-xs">${categoryNames[tracker.category] || 'Другое'}</p>
+                                </div>
+                            </div>
+                            <button onclick="event.stopPropagation(); App.deleteTrackerPrompt('${tracker.id}')" 
+                                    class="text-gray-400 hover:text-red-600 p-1" title="Удалить">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="progress-bar bg-gray-200">
+                                <div class="progress-fill" style="width: ${progress}%; background-color: ${color.hex};"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>${daysCompleted} из 30 дней</span>
+                                <span>${progress}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-xs text-gray-500">
+                            <div class="flex items-center">
+                                <i class="far fa-calendar mr-1"></i>
+                                <span>${Utils.formatDate(tracker.createdAt)}</span>
+                            </div>
+                            <button onclick="event.stopPropagation(); App.shareTracker('${tracker.id}')" 
+                                    class="text-blue-600 hover:text-blue-700 flex items-center">
+                                <i class="fas fa-share-alt mr-1"></i>
+                                <span>Поделиться</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderPreview(trackerData) {
+                const preview = document.getElementById('pdf-preview');
+                if (!preview) return;
+                
+                preview.innerHTML = this.generateTrackerHTML(trackerData, false);
+                preview.classList.add('fade-in');
+                
+                // Сохраняем данные трекера в dataset
+                preview.dataset.trackerData = JSON.stringify(trackerData);
+                preview.dataset.trackerId = trackerData.id;
+                
+                // Показываем кнопки действий
+                document.getElementById('preview-actions').classList.remove('hidden');
+                
+                // Добавляем обработчики для дней
+                this.attachDayClickHandlers(trackerData.id, trackerData.color);
+            },
+            
+            attachDayClickHandlers(trackerId, colorName) {
+                const color = CONFIG.colorMap[colorName] || CONFIG.colorMap.blue;
+                const preview = document.getElementById('pdf-preview');
+                
+                if (!preview) return;
+                
+                preview.querySelectorAll('.day-cell[data-tracker-id="' + trackerId + '"]').forEach(cell => {
+                    cell.addEventListener('click', function() {
+                        const day = parseInt(this.getAttribute('data-day'));
+                        const checkBox = this.querySelector('.check-box');
+                        const icon = checkBox.querySelector('.fa-check');
+                        
+                        // Получаем текущие данные трекера
+                        const trackerDataStr = preview.dataset.trackerData;
+                        if (!trackerDataStr) return;
+                        
+                        const trackerData = JSON.parse(trackerDataStr);
+                        const checkedDays = trackerData.checkedDays || [];
+                        
+                        if (checkedDays.includes(day)) {
+                            // Убираем отметку
+                            const index = checkedDays.indexOf(day);
+                            checkedDays.splice(index, 1);
+                            
+                            checkBox.style.backgroundColor = 'transparent';
+                            checkBox.style.borderColor = '#d1d5db';
+                            if (icon) icon.style.display = 'none';
+                            this.style.borderColor = '#e5e7eb';
+                        } else {
+                            // Добавляем отметку
+                            checkedDays.push(day);
+                            checkedDays.sort((a, b) => a - b);
+                            
+                            checkBox.style.backgroundColor = color.hex;
+                            checkBox.style.borderColor = color.hex;
+                            if (icon) icon.style.display = 'block';
+                            this.style.borderColor = color.hex;
+                        }
+                        
+                        // Обновляем данные трекера
+                        trackerData.checkedDays = checkedDays;
+                        trackerData.progress = Math.round((checkedDays.length / 30) * 100);
+                        preview.dataset.trackerData = JSON.stringify(trackerData);
+                        
+                        // Обновляем статистику в превью
+                        const progressFill = preview.querySelector('.progress-fill');
+                        const progressText = preview.querySelectorAll('.text-xs.text-gray-500 span');
+                        
+                        if (progressFill) {
+                            progressFill.style.width = trackerData.progress + '%';
+                        }
+                        
+                        if (progressText.length >= 2) {
+                            progressText[0].textContent = `${checkedDays.length} из 30 дней`;
+                            progressText[1].textContent = `${trackerData.progress}%`;
+                        }
+                        
+                        // Обновляем в хранилище
+                        TrackerStorage.updateTrackerDays(trackerId, checkedDays);
+                        
+                        // Обновляем список трекеров
+                        App.updateTrackersList();
+                        App.updateStatistics();
+                        
+                        Utils.showNotification('Прогресс обновлен!');
+                    });
+                });
+            },
+            
+            async generatePDF(trackerData) {
+                try {
+                    // Создаем временный контейнер для PDF
+                    const tempContainer = document.createElement('div');
+                    tempContainer.style.cssText = `
+                        position: absolute !important;
+                        left: -9999px !important;
+                        top: 0 !important;
+                        width: 794px !important;
+                        height: 1123px !important;
+                        background: white !important;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                        box-sizing: border-box !important;
+                        overflow: hidden !important;
+                    `;
+                    
+                    // Генерируем HTML для PDF
+                    tempContainer.innerHTML = this.generateTrackerHTML(trackerData, true);
+                    
+                    document.body.appendChild(tempContainer);
+                    
+                    const canvas = await html2canvas(tempContainer, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        allowTaint: true,
+                        width: 794,
+                        height: 1123,
+                        onclone: function(clonedDoc) {
+                            clonedDoc.body.style.background = '#ffffff';
+                            clonedDoc.body.style.backgroundColor = '#ffffff';
+                        }
+                    });
+                    
+                    document.body.removeChild(tempContainer);
+                    
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    
+                    // Устанавливаем белый фон
+                    doc.setFillColor(255, 255, 255);
+                    doc.rect(0, 0, 210, 297, 'F');
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    const imgWidth = 190;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    const xPos = (210 - imgWidth) / 2;
+                    const yPos = 10;
+                    
+                    doc.addImage(imgData, 'JPEG', xPos, yPos, imgWidth, imgHeight);
+                    
+                    // Безопасное имя файла
+                    const safeFileName = trackerData.name
+                        .replace(/[^\w\sа-яА-ЯёЁ-]/gi, '')
+                        .replace(/\s+/g, '_')
+                        .substring(0, 50);
+                    
+                    doc.save(`Трекер_${safeFileName || 'челлендж'}.pdf`);
+                    
+                    Utils.showNotification('PDF успешно скачан!');
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка генерации PDF:', error);
+                    Utils.showNotification('Не удалось создать PDF. Попробуйте сделать скриншот превью.', 'error');
+                    return false;
+                }
+            }
+        };
+
+        // Основное приложение
+        const App = {
+            currentTrackerId: null,
+            trackerToDelete: null,
+            
+            init() {
+                this.initMobileMenu();
+                this.initForm();
+                this.initColorPicker();
+                this.initEventListeners();
+                this.loadTrackers();
+                this.checkUrlHash();
+                
+                // Инициализируем модальные окна
+                this.initModals();
+            },
+            
+            initMobileMenu() {
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                
+                if (menuBtn && mobileMenu) {
+                    menuBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        mobileMenu.classList.toggle('hidden');
+                        menuBtn.classList.toggle('bg-gray-100');
+                    });
+                    
+                    // Закрытие меню при клике вне его
+                    document.addEventListener('click', (e) => {
+                        if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+                            mobileMenu.classList.add('hidden');
+                            menuBtn.classList.remove('bg-gray-100');
+                        }
+                    });
+                    
+                    // Закрытие при клике на ссылку
+                    mobileMenu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            mobileMenu.classList.add('hidden');
+                            menuBtn.classList.remove('bg-gray-100');
+                        });
+                    });
+                }
+            },
+            
+            initForm() {
+                const form = document.getElementById('tracker-form');
+                if (!form) return;
+                
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleFormSubmit();
+                });
+                
+                // Валидация при потере фокуса
+                form.querySelectorAll('input, select, textarea').forEach(input => {
+                    input.addEventListener('blur', () => this.validateField(input));
+                    input.addEventListener('input', () => {
+                        const errorEl = document.getElementById(`${input.id}-error`);
+                        if (errorEl) errorEl.classList.add('hidden');
+                        input.classList.remove('border-red-500');
+                    });
+                });
+            },
+            
+            initColorPicker() {
+                document.querySelectorAll('input[name="color"]').forEach(input => {
+                    input.addEventListener('change', (e) => this.updateColorSelection(e.target));
+                });
+                
+                const defaultColor = document.querySelector('input[name="color"]:checked');
+                if (defaultColor) this.updateColorSelection(defaultColor);
+            },
+            
+            updateColorSelection(selectedInput) {
+                document.querySelectorAll('input[name="color"]').forEach(input => {
+                    const label = document.querySelector(`label[for="${input.id}"]`);
+                    if (input === selectedInput) {
+                        label.classList.remove('border-transparent');
+                        label.classList.add('border-gray-900', 'ring-2', 'ring-gray-400', 'ring-offset-2');
+                        label.style.transform = 'scale(1.1)';
+                    } else {
+                        label.classList.remove('border-gray-900', 'ring-2', 'ring-gray-400', 'ring-offset-2');
+                        label.classList.add('border-transparent');
+                        label.style.transform = 'scale(1)';
+                    }
+                });
+            },
+            
+            initEventListeners() {
+                // Кнопка скачивания PDF
+                const downloadBtn = document.getElementById('download-pdf-btn');
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', async () => {
+                        const preview = document.getElementById('pdf-preview');
+                        const trackerDataStr = preview?.dataset.trackerData;
+                        
+                        if (!trackerDataStr) {
+                            Utils.showNotification('Сначала создайте трекер', 'error');
+                            return;
+                        }
+                        
+                        try {
+                            const trackerData = JSON.parse(trackerDataStr);
+                            downloadBtn.disabled = true;
+                            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Генерация...';
+                            
+                            await TrackerGenerator.generatePDF(trackerData);
+                            
+                            downloadBtn.disabled = false;
+                            downloadBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Скачать PDF';
+                        } catch (error) {
+                            console.error('Ошибка:', error);
+                            downloadBtn.disabled = false;
+                            downloadBtn.innerHTML = '<i class="fas fa-download mr-2"></i>Скачать PDF';
+                        }
+                    });
+                }
+                
+                // Кнопка копирования ссылки
+                const copyLinkBtn = document.getElementById('copy-tracker-link-btn');
+                if (copyLinkBtn) {
+                    copyLinkBtn.addEventListener('click', () => {
+                        const preview = document.getElementById('pdf-preview');
+                        const trackerId = preview?.dataset.trackerId;
+                        
+                        if (!trackerId) {
+                            Utils.showNotification('Сначала создайте трекер', 'error');
+                            return;
+                        }
+                        
+                        const url = Utils.getTrackerUrl(trackerId);
+                        Utils.copyToClipboard(url).then(success => {
+                            if (success) {
+                                Utils.showNotification('Ссылка скопирована в буфер обмена!');
+                            }
+                        });
+                    });
+                }
+                
+                // Кнопка сохранения изменений
+                const saveBtn = document.getElementById('save-changes-btn');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => {
+                        const preview = document.getElementById('pdf-preview');
+                        const trackerDataStr = preview?.dataset.trackerData;
+                        
+                        if (!trackerDataStr) return;
+                        
+                        const trackerData = JSON.parse(trackerDataStr);
+                        TrackerStorage.saveTracker(trackerData);
+                        Utils.showNotification('Изменения сохранены!');
+                    });
+                }
+            },
+            
+            initModals() {
+                // Подтверждение удаления
+                const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+                if (confirmDeleteBtn) {
+                    confirmDeleteBtn.addEventListener('click', () => {
+                        if (this.trackerToDelete) {
+                            this.deleteTracker(this.trackerToDelete);
+                            this.trackerToDelete = null;
+                        }
+                        closeModal('delete-tracker-modal');
+                    });
+                }
+                
+                // Обработка Escape для закрытия модалок
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+                            if (!modal.classList.contains('hidden')) {
+                                closeModal(modal.id);
+                            }
+                        });
+                    }
+                });
+            },
+            
+            validateField(field) {
+                const value = field.value.trim();
+                let error = null;
+                
+                switch(field.name || field.id) {
+                    case 'challenge-name':
+                        if (!value || value.length < 3) error = 'Минимум 3 символа';
+                        break;
+                    case 'category':
+                        if (!value) error = 'Выберите категорию';
+                        break;
+                    case 'goal':
+                        if (!value || value.length < 10) error = 'Минимум 10 символов';
+                        break;
+                }
+                
+                const errorEl = document.getElementById(`${field.id}-error`);
+                if (error) {
+                    field.classList.add('border-red-500');
+                    if (errorEl) {
+                        errorEl.textContent = error;
+                        errorEl.classList.remove('hidden');
+                    }
+                } else {
+                    field.classList.remove('border-red-500');
+                    if (errorEl) errorEl.classList.add('hidden');
+                }
+            },
+            
+            handleFormSubmit() {
+                const submitBtn = document.getElementById('submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                const formData = {
+                    name: Utils.sanitizeText(document.getElementById('challenge-name').value, 100),
+                    category: document.getElementById('category').value,
+                    goal: Utils.sanitizeText(document.getElementById('goal').value, 500),
+                    color: document.querySelector('input[name="color"]:checked')?.value || 'blue'
+                };
+                
+                // Валидация всех полей
+                let hasError = false;
+                ['challenge-name', 'category', 'goal'].forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    this.validateField(field);
+                    const errorEl = document.getElementById(`${fieldId}-error`);
+                    if (errorEl && !errorEl.classList.contains('hidden')) {
+                        hasError = true;
+                    }
+                });
+                
+                if (hasError) {
+                    Utils.showNotification('Пожалуйста, заполните все поля корректно', 'error');
+                    return;
+                }
+                
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoading.classList.remove('hidden');
+                
+                // Создаем новый трекер
+                const newTracker = {
+                    id: Utils.generateId(),
+                    ...formData,
+                    checkedDays: [],
+                    progress: 0,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Сохраняем трекер
+                const saved = TrackerStorage.saveTracker(newTracker);
+                
+                if (saved) {
+                    // Показываем превью
+                    TrackerGenerator.renderPreview(newTracker);
+                    
+                    // Обновляем список трекеров
+                    this.loadTrackers();
+                    
+                    // Прокручиваем к превью
+                    setTimeout(() => {
+                        const preview = document.getElementById('preview-heading');
+                        if (preview) {
+                            preview.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 100);
+                    
+                    Utils.showNotification('Трекер успешно создан!');
+                }
+                
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+                
+                // Очищаем форму
+                if (saved) {
+                    document.getElementById('tracker-form').reset();
+                    const defaultColor = document.querySelector('input[name="color"][value="blue"]');
+                    if (defaultColor) {
+                        defaultColor.checked = true;
+                        this.updateColorSelection(defaultColor);
+                    }
+                }
+            },
+            
+            loadTrackers() {
+                const trackers = TrackerStorage.getTrackers();
+                const container = document.getElementById('trackers-list-container');
+                const emptyState = document.getElementById('empty-trackers-state');
+                const statisticsContainer = document.getElementById('statistics-container');
+                
+                if (!container || !emptyState) return;
+                
+                // Очищаем контейнер
+                const grid = container.querySelector('.grid');
+                if (grid) {
+                    grid.innerHTML = '';
+                }
+                
+                if (trackers.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    if (statisticsContainer) statisticsContainer.classList.add('hidden');
+                    return;
+                }
+                
+                emptyState.classList.add('hidden');
+                if (statisticsContainer) statisticsContainer.classList.remove('hidden');
+                
+                // Добавляем трекеры
+                trackers.forEach(tracker => {
+                    if (grid) {
+                        grid.insertAdjacentHTML('beforeend', TrackerGenerator.generateTrackerListItem(tracker));
+                    }
+                });
+                
+                // Обновляем статистику
+                this.updateStatistics();
+            },
+            
+            updateStatistics() {
+                const trackers = TrackerStorage.getTrackers();
+                
+                let completedDays = 0;
+                let activeTrackers = 0;
+                let totalProgress = 0;
+                let averageProgress = 0;
+                
+                trackers.forEach(tracker => {
+                    const days = tracker.checkedDays || [];
+                    const progress = tracker.progress || 0;
+                    
+                    completedDays += days.length;
+                    totalProgress += progress;
+                    
+                    if (days.length > 0) {
+                        activeTrackers++;
+                    }
+                });
+                
+                // Рассчитываем средний прогресс
+                if (trackers.length > 0) {
+                    averageProgress = Math.round(totalProgress / trackers.length);
+                }
+                
+                // Обновляем элементы статистики
+                const totalTrackersEl = document.getElementById('total-trackers');
+                const activeTrackersEl = document.getElementById('active-trackers');
+                const completedDaysEl = document.getElementById('completed-days');
+                const averageProgressEl = document.getElementById('average-progress');
+                
+                if (totalTrackersEl) totalTrackersEl.textContent = trackers.length;
+                if (activeTrackersEl) activeTrackersEl.textContent = activeTrackers;
+                if (completedDaysEl) completedDaysEl.textContent = completedDays;
+                if (averageProgressEl) averageProgressEl.textContent = averageProgress + '%';
+            },
+            
+            openTracker(trackerId) {
+                const tracker = TrackerStorage.getTracker(trackerId);
+                if (!tracker) {
+                    Utils.showNotification('Трекер не найден', 'error');
+                    return;
+                }
+                
+                // Показываем в превью
+                TrackerGenerator.renderPreview(tracker);
+                
+                // Прокручиваем к превью
+                const preview = document.getElementById('preview-heading');
+                if (preview) {
+                    preview.scrollIntoView({ behavior: 'smooth' });
+                }
+                
+                // Обновляем активный элемент в списке
+                this.setActiveTracker(trackerId);
+            },
+            
+            setActiveTracker(trackerId) {
+                // Убираем активный класс у всех трекеров
+                document.querySelectorAll('.tracker-list-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Добавляем активный класс выбранному трекеру
+                const activeItem = document.querySelector(`.tracker-list-item[data-tracker-id="${trackerId}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            },
+            
+            deleteTrackerPrompt(trackerId) {
+                const tracker = TrackerStorage.getTracker(trackerId);
+                if (!tracker) return;
+                
+                this.trackerToDelete = trackerId;
+                
+                const messageEl = document.getElementById('delete-tracker-message');
+                if (messageEl) {
+                    messageEl.innerHTML = `Вы уверены, что хотите удалить трекер "<strong>${Utils.sanitizeHtml(tracker.name)}</strong>"?<br>Это действие нельзя отменить.`;
+                }
+                
+                openModal('delete-tracker-modal');
+            },
+            
+            deleteTracker(trackerId) {
+                const success = TrackerStorage.deleteTracker(trackerId);
+                
+                if (success) {
+                    // Удаляем из DOM
+                    const trackerElement = document.querySelector(`.tracker-list-item[data-tracker-id="${trackerId}"]`);
+                    if (trackerElement) {
+                        trackerElement.remove();
+                    }
+                    
+                    // Проверяем, удаляем ли мы текущий трекер в превью
+                    const preview = document.getElementById('pdf-preview');
+                    const currentTrackerId = preview?.dataset.trackerId;
+                    
+                    if (currentTrackerId === trackerId) {
+                        // Очищаем превью
+                        preview.innerHTML = `
+                            <p class="text-gray-400 text-lg sm:text-xl text-center px-4">
+                                <i class="fas fa-magic text-gray-300 text-2xl mb-2 block"></i>
+                                Трекер удален. Создайте новый трекер.
+                            </p>
+                        `;
+                        preview.dataset.trackerData = '';
+                        preview.dataset.trackerId = '';
+                        
+                        // Скрываем кнопки действий
+                        document.getElementById('preview-actions').classList.add('hidden');
+                    }
+                    
+                    // Обновляем статистику
+                    this.updateStatistics();
+                    
+                    // Проверяем, нужно ли показать пустое состояние
+                    const trackers = TrackerStorage.getTrackers();
+                    const emptyState = document.getElementById('empty-trackers-state');
+                    const statisticsContainer = document.getElementById('statistics-container');
+                    
+                    if (trackers.length === 0) {
+                        if (emptyState) emptyState.classList.remove('hidden');
+                        if (statisticsContainer) statisticsContainer.classList.add('hidden');
+                    }
+                    
+                    Utils.showNotification('Трекер удален');
+                } else {
+                    Utils.showNotification('Ошибка при удалении трекера', 'error');
+                }
+            },
+            
+            shareTracker(trackerId) {
+                const tracker = TrackerStorage.getTracker(trackerId);
+                if (!tracker) {
+                    Utils.showNotification('Трекер не найден', 'error');
+                    return;
+                }
+                
+                const url = Utils.getTrackerUrl(trackerId);
+                const shareUrlEl = document.getElementById('tracker-share-url');
+                const openLinkEl = document.getElementById('open-tracker-link');
+                
+                if (shareUrlEl) shareUrlEl.textContent = url;
+                if (openLinkEl) openLinkEl.href = url;
+                
+                openModal('share-tracker-modal');
+            },
+            
+            checkUrlHash() {
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#tracker-')) {
+                    const trackerId = hash.replace('#tracker-', '');
+                    const tracker = TrackerStorage.getTracker(trackerId);
+                    
+                    if (tracker) {
+                        // Даем время на загрузку страницы
+                        setTimeout(() => {
+                            this.openTracker(trackerId);
+                        }, 500);
+                    }
+                }
+            }
+        };
+
+        // Функции для работы с модальными окнами
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Функции для копирования (для модалки поддержки)
+        function copyCardNumber() {
+            const text = "2202 2055 7513 3944";
+            Utils.copyToClipboard(text).then(success => {
+                if (success) {
+                    Utils.showNotification('Номер карты скопирован');
+                }
+            });
+        }
+
+        function copyTonWallet() {
+            const text = "UQB650sDu-0vZiBrzHvoVRmxmvTNEweRQ02qijkKKmDk3wC2";
+            Utils.copyToClipboard(text).then(success => {
+                if (success) {
+                    Utils.showNotification('TON адрес скопирован');
+                }
+            });
+        }
+
+        function copyShareUrl() {
+            const shareUrlEl = document.getElementById('tracker-share-url');
+            if (!shareUrlEl) return;
+            
+            const text = shareUrlEl.textContent;
+            Utils.copyToClipboard(text).then(success => {
+                if (success) {
+                    Utils.showNotification('Ссылка скопирована');
+                }
+            });
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
+            
+            // Закрытие модалок при клике на оверлей
+            document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+            
+            // Глобальные функции
+            window.openModal = openModal;
+            window.closeModal = closeModal;
+            window.copyCardNumber = copyCardNumber;
+            window.copyTonWallet = copyTonWallet;
+            window.copyShareUrl = copyShareUrl;
+        });
+
+        // Обработка изменения хэша URL
+        window.addEventListener('hashchange', () => {
+            App.checkUrlHash();
+        });
+    </script>
+</body>
+</html>
