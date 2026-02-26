@@ -4,11 +4,11 @@
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-6FG4W3P9XF"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
-    gtag('config', 'G-6FG4W3P9XF');
+        gtag('config', 'G-6FG4W3P9XF');
     </script>
     
     <meta charset="UTF-8">
@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -146,7 +147,7 @@
             <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 dark:text-white" data-translate="hero_title">
                 Создай свой челлендж на 30 дней
             </h1>
-            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto px-2 dark:text-gray-300" data-translate="hero_subtitle">
+            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 text-center max-w-2xl mx-auto px-2 dark:text-gray-300 text-center" data-translate="hero_subtitle">
                 Создавай трекеры, сохраняй прогресс и достигай целей
             </p>
         </div>
@@ -181,8 +182,8 @@
                     <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center dark:bg-gray-800">
                         <i class="fas fa-chart-line text-gray-400 text-3xl dark:text-gray-500"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-600 mb-2 dark:text-gray-400" data-translate="empty_state_title">У вас еще нет трекеров</h3>
-                    <p class="text-gray-500 mb-6 dark:text-gray-500" data-translate="empty_state_description">Создайте свой первый трекер и начните отслеживать прогресс</p>
+                    <h3 class="text-lg font-semibold text-gray-600 text-center mb-2 dark:text-gray-400 text-center" data-translate="empty_state_title">У вас еще нет трекеров</h3>
+                    <p class="text-gray-500 mb-6 dark:text-gray-500 text-center" data-translate="empty_state_description">Создайте свой первый трекер и начните отслеживать прогресс</p>
                     <a href="#form-heading" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium dark:text-blue-400 dark:hover:text-blue-300">
                         <i class="fas fa-plus-circle mr-2"></i>
                         <span data-translate="empty_state_action">Создать первый трекер</span>
@@ -239,6 +240,78 @@
                                 <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completed_days">Завершено дней</p>
                                 <p id="completed-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
                             </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                                <i class="fas fa-fire text-yellow-600 text-xl dark:text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_streak_days">Дней подряд</p>
+                                <p id="streak-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Процент завершения (общий) -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 dark:bg-indigo-900/30">
+                                <i class="fas fa-percent text-indigo-600 text-xl dark:text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completion_rate">Общий прогресс</p>
+                                <p id="completion-rate" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Самый продуктивный день -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                                <i class="fas fa-star text-yellow-600 text-xl dark:text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_best_day">Лучший день</p>
+                                <p id="best-day" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Любимая категория -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4 dark:bg-pink-900/30">
+                                <i class="fas fa-heart text-pink-600 text-xl dark:text-pink-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_favorite_category">Любимая категория</p>
+                                <p id="favorite-category" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Новый блок с графиками -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                    <!-- Тепловая карта активности по дням недели -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="streak-heatmap"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Круговая диаграмма по категориям -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- График динамики завершения -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800 lg:col-span-2">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="completion-timeline"></canvas>
                         </div>
                     </div>
                 </div>
@@ -338,9 +411,9 @@
         <div class="container mx-auto px-4 max-w-4xl">
             <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center dark:text-white" data-translate="preview_title">Предпросмотр трекера</h2>
             <div id="pdf-preview" class="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12 min-h-[400px] flex items-center justify-center dark:bg-gray-800">
-                <p class="text-gray-400 text-lg sm:text-xl text-center px-4 dark:text-gray-500">
-                    <i class="fas fa-magic text-gray-300 text-2xl mb-2 block dark:text-gray-600"></i>
-                    <span data-translate="preview_empty">Твой трекер появится здесь после создания</span>
+                <p class="text-gray-400 text-center text-lg sm:text-xl text-center px-4 dark:text-gray-500 text-center">
+                    <i class="fas fa-magic text-gray-300 text-center text-2xl mb-2 block dark:text-gray-600"></i>
+                    <span class="preview-empty text-gray-500 text-center dark:text-gray-600 text-center" data-translate="preview_empty">Твой трекер появится здесь после создания</span>
                 </p>
             </div>
             <div id="preview-actions" class="mt-6 flex flex-col sm:flex-row gap-4 justify-center hidden">
@@ -369,7 +442,6 @@
             <div class="max-w-4xl mx-auto">
                 <div class="text-center mb-6 md:mb-8">
                     <h3 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4" data-translate="footer_title">30-дневный челлендж трекер</h3>
-                    <p class="text-gray-400 text-sm md:text-base dark:text-gray-500" data-translate="footer_description">Инструмент для формирования полезных привычек и достижения целей</p>
                 </div>
                 
                 <nav class="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-8">
@@ -386,8 +458,8 @@
                     <p class="text-xs md:text-sm text-gray-500 mb-2 dark:text-gray-600" data-translate="footer_copyright">
                         © 2025 30-дневный челлендж трекер. Все права защищены.
                     </p>
-                    <p class="text-xs text-gray-600 dark:text-gray-700" data-translate="footer_disclaimer">
-                        Инструмент для личного использования. Все данные хранятся локально.
+                    <p class="text-xs text-gray-600 text-center dark:text-gray-700 text-center" data-translate="footer_disclaimer">
+                        Инструмент для формирования полезных привычек и достижения целей. Все данные хранятся локально.
                     </p>
                 </div>
             </div>
@@ -412,7 +484,7 @@
                             <i class="fas fa-rocket text-blue-600 text-2xl md:text-3xl dark:text-blue-400"></i>
                         </div>
                         <h3 class="text-lg md:text-xl font-bold text-gray-900 text-center mb-3 md:mb-4 dark:text-white" data-translate="modal_about_app_name">30-дневный челлендж трекер</h3>
-                        <p class="text-gray-600 text-center text-sm md:text-base mb-4 md:mb-6 dark:text-gray-400" data-translate="modal_about_description">
+                        <p class="text-gray-600 text-center text-sm md:text-base mb-4 md:mb-6 dark:text-gray-400 text-center" data-translate="modal_about_description">
                             Простой и эффективный инструмент для формирования полезных привычек
                         </p>
                     </div>
@@ -474,17 +546,17 @@
                 <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-grow">
                     <div class="space-y-4 md:space-y-6">
                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
-                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white" data-translate="modal_privacy_storage_title">📁 Локальное хранение</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_storage_title">📁 Локальное хранение</h4>
                             <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_storage_desc">Все данные хранятся в вашем браузере. Никакая информация не отправляется на серверы.</p>
                         </div>
 
                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
-                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white" data-translate="modal_privacy_confidential_title">🔒 Конфиденциальность</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_confidential_title">🔒 Конфиденциальность</h4>
                             <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_confidential_desc">Мы не собираем и не обрабатываем ваши персональные данные.</p>
                         </div>
 
                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
-                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white" data-translate="modal_privacy_pdf_title">📄 Генерация PDF</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_pdf_title">📄 Генерация PDF</h4>
                             <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_pdf_desc">PDF файлы создаются локально и сразу сохраняются на ваше устройство.</p>
                         </div>
                     </div>
@@ -518,7 +590,7 @@
                             <i class="fas fa-envelope text-blue-600 text-2xl md:text-3xl dark:text-blue-400"></i>
                         </div>
                         <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_contact_question">Есть вопросы?</h3>
-                        <p class="text-gray-600 text-sm md:text-base dark:text-gray-400" data-translate="modal_contact_description">Свяжитесь удобным способом</p>
+                        <p class="text-gray-600 text-center text-sm md:text-base dark:text-gray-400" data-translate="modal_contact_description">Свяжитесь удобным способом</p>
                     </div>
 
                     <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg sm:rounded-xl border border-blue-100 p-4 md:p-6 dark:from-blue-900/20 dark:to-cyan-900/20 dark:border-blue-800/30">
@@ -597,7 +669,7 @@
                             <i class="fas fa-heart text-green-600 text-2xl md:text-3xl dark:text-green-400"></i>
                         </div>
                         <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_support_subtitle">Поддержите развитие проекта</h3>
-                        <p class="text-gray-600 text-sm md:text-base dark:text-gray-400" data-translate="modal_support_description">Ваша поддержка помогает улучшать трекер и добавлять новые функции</p>
+                        <p class="text-gray-600 text-center text-sm md:text-base dark:text-gray-400" data-translate="modal_support_description">Ваша поддержка помогает улучшать трекер и добавлять новые функции</p>
                     </div>
 
                     
@@ -636,7 +708,8 @@
                         </div>
                         
                         <div class="text-center text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                            <p><i class="fas fa-info-circle text-blue-500 mr-1 dark:text-blue-400"></i>
+                            <p class="flex items-center justify-center gap-1">
+                                <i class="fas fa-info-circle text-blue-500 dark:text-blue-400"></i>
                                 <span data-translate="support_note">Любая сумма помогает развитию проекта</span>
                             </p>
                         </div>

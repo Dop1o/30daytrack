@@ -1,4 +1,3 @@
-
 const CONFIG = {
     colorMap: {
         blue: { hex: '#3b82f6', name: 'Синий', name_en: 'Blue' },
@@ -94,6 +93,558 @@ const ThemeManager = {
     }
 };
 
+
+const ChartManager = {
+    charts: {},
+    
+    init() {
+        this.initCharts();
+        this.initThemeObserver();
+    },
+    
+    initCharts() {
+        this.createStreakHeatmap();
+        this.createCategoryChart();
+        this.createCompletionTimeline();
+    },
+    
+    // Тепловая карта активности
+    createStreakHeatmap() {
+        const ctx = document.getElementById('streak-heatmap')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (this.charts.heatmap) {
+            this.charts.heatmap.destroy();
+        }
+        
+        const trackers = TrackerStorage.getTrackers();
+        const heatmapData = this.calculateHeatmapData(trackers);
+        
+        // Переводим дни недели
+        const weekdays = [
+            I18n.t('weekday_short_mon', 'Пн'),
+            I18n.t('weekday_short_tue', 'Вт'),
+            I18n.t('weekday_short_wed', 'Ср'),
+            I18n.t('weekday_short_thu', 'Чт'),
+            I18n.t('weekday_short_fri', 'Пт'),
+            I18n.t('weekday_short_sat', 'Сб'),
+            I18n.t('weekday_short_sun', 'Вс')
+        ];
+        
+        // Полные названия для подсказок
+        const weekdaysFull = [
+            I18n.t('weekday_monday', 'Понедельник'),
+            I18n.t('weekday_tuesday', 'Вторник'),
+            I18n.t('weekday_wednesday', 'Среда'),
+            I18n.t('weekday_thursday', 'Четверг'),
+            I18n.t('weekday_friday', 'Пятница'),
+            I18n.t('weekday_saturday', 'Суббота'),
+            I18n.t('weekday_sunday', 'Воскресенье')
+        ];
+        
+        this.charts.heatmap = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: weekdays,
+                datasets: [{
+                    label: I18n.t('chart_activity', 'Активность'),
+                    data: heatmapData.weeklyAverage,
+                    backgroundColor: (context) => {
+                        const value = context.raw;
+                        if (value === 0) return 'rgba(156, 163, 175, 0.2)'; // серый для нуля
+                        if (value < 2) return 'rgba(59, 130, 246, 0.4)';    // светло-синий
+                        if (value < 4) return 'rgba(59, 130, 246, 0.6)';    // синий
+                        if (value < 6) return 'rgba(59, 130, 246, 0.8)';    // темно-синий
+                        return 'rgba(59, 130, 246, 1)';                     // самый темный
+                    },
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: this.getThemeColor('tooltip'),
+                        titleColor: this.getThemeColor('tooltipTitle'),
+                        bodyColor: this.getThemeColor('tooltipText'),
+                        borderColor: this.getThemeColor('grid'),
+                        borderWidth: 1,
+                        padding: 10,
+                        caretSize: 6,
+                        cornerRadius: 6,
+                        titleFont: {
+                            weight: 'bold',
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            title: (context) => {
+                                // Используем полное название дня недели
+                                const index = context[0].dataIndex;
+                                return weekdaysFull[index];
+                            },
+                            label: (context) => {
+                                const value = context.raw;
+                                if (value === 0) {
+                                    return I18n.t('tooltip_no_activity', 'Нет активности');
+                                }
+                                if (value === 1) {
+                                    return I18n.t('tooltip_one_tracker', '1 трекер');
+                                }
+                                // Склонение для русского языка
+                                if (I18n.currentLang === 'ru') {
+                                    if (value >= 2 && value <= 4) {
+                                        return `${value} ${I18n.t('tooltip_trackers_few', 'трекера в среднем')}`;
+                                    }
+                                }
+                                return `${value} ${I18n.t('tooltip_trackers', 'трекеров в среднем')}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: I18n.t('chart_heatmap_title', 'Активность по дням недели'),
+                        color: this.getThemeColor('text'),
+                        font: { size: 14, weight: 'normal' },
+                        padding: { bottom: 20 }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: I18n.t('chart_heatmap_subtitle', 'Чем темнее цвет, тем больше трекеров вы отмечали'),
+                        color: this.getThemeColor('text'),
+                        font: { size: 11, style: 'italic' },
+                        padding: { top: 0, bottom: 10 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: this.getThemeColor('grid')
+                        },
+                        ticks: {
+                            color: this.getThemeColor('text'),
+                            stepSize: 1,
+                            callback: (value) => value
+                        },
+                        title: {
+                            display: true,
+                            text: I18n.t('chart_avg_trackers', 'Среднее количество'),
+                            color: this.getThemeColor('text')
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            color: this.getThemeColor('text')
+                        }
+                    }
+                }
+            }
+        });
+    },
+    
+    // Круговая диаграмма с прогрессом
+    createCategoryChart() {
+        const ctx = document.getElementById('category-chart')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (this.charts.category) {
+            this.charts.category.destroy();
+        }
+        
+        const trackers = TrackerStorage.getTrackers();
+        const categoryData = this.calculateCategoryProgress(trackers);
+        
+        // Фильтруем только категории с трекерами
+        const activeCategories = categoryData.labels.filter((_, i) => categoryData.values[i] > 0);
+        const activeValues = categoryData.values.filter(v => v > 0);
+        const activeColors = categoryData.colors.filter((_, i) => categoryData.values[i] > 0);
+        
+        if (activeCategories.length === 0) {
+            // Если нет данных, показываем заглушку
+            this.showNoDataChart(ctx, I18n.t('chart_no_categories', 'Создайте трекеры в разных категориях'));
+            return;
+        }
+        
+        this.charts.category = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: activeCategories,
+                datasets: [{
+                    data: activeValues,
+                    backgroundColor: activeColors,
+                    borderColor: this.getThemeColor('background'),
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: this.getThemeColor('text'), // Будет использовать правильный цвет в зависимости от темы
+                            font: { 
+                                size: 12,
+                                weight: '500'
+                            },
+                            padding: 15,
+                            generateLabels: (chart) => {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => ({
+                                        text: `${label}: ${data.datasets[0].data[i]} ${I18n.t('chart_trackers', 'трек.')}`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        strokeStyle: this.getThemeColor('background'),
+                                        lineWidth: 2,
+                                        hidden: false,
+                                        index: i,
+                                        fontColor: this.getThemeColor('text') // Явно задаем цвет текста
+                                    }));
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: this.getThemeColor('tooltip'),
+                        titleColor: this.getThemeColor('text'),
+                        bodyColor: this.getThemeColor('text'),
+                        callbacks: {
+                            label: (context) => {
+                                const label = context.label || '';
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} трекеров (${percentage}%)`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: I18n.t('chart_category_title', 'Распределение по категориям'),
+                        color: this.getThemeColor('text'),
+                        font: { size: 14, weight: 'normal' },
+                        padding: { bottom: 10 }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    },
+    
+    // График завершения трекеров (когда пользователь завершит 30 дней)
+    createCompletionTimeline() {
+        const ctx = document.getElementById('completion-timeline')?.getContext('2d');
+        if (!ctx) return;
+        
+        if (this.charts.timeline) {
+            this.charts.timeline.destroy();
+        }
+        
+        const trackers = TrackerStorage.getTrackers();
+        const timelineData = this.calculateCompletionData(trackers);
+        
+        if (timelineData.labels.length === 0) {
+            this.showNoDataChart(ctx, I18n.t('chart_no_completions', 'Отмечайте прогресс, чтобы увидеть динамику'));
+            return;
+        }
+        
+        this.charts.timeline = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timelineData.labels,
+                datasets: [
+                    {
+                        label: I18n.t('chart_completed', 'Завершено'),
+                        data: timelineData.completed,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: I18n.t('chart_active', 'Активные'),
+                        data: timelineData.active,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: this.getThemeColor('text'),
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: this.getThemeColor('tooltip'),
+                        titleColor: this.getThemeColor('tooltipTitle'),
+                        bodyColor: this.getThemeColor('tooltipText'),
+                        borderColor: this.getThemeColor('grid'),
+                        borderWidth: 1,
+                        padding: 10,
+                        caretSize: 6,
+                        cornerRadius: 6,
+                        titleFont: {
+                            weight: 'bold',
+                            size: 13
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        callbacks: {
+                            label: (context) => {
+                                const label = context.dataset.label || '';
+                                const value = context.raw;
+                                return `${label}: ${value}`;
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: I18n.t('chart_timeline_title', 'Динамика завершения трекеров'),
+                        color: this.getThemeColor('text'),
+                        font: { size: 14, weight: 'normal' },
+                        padding: { bottom: 10 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: this.getThemeColor('grid') },
+                        ticks: { 
+                            color: this.getThemeColor('text'),
+                            stepSize: 1,
+                            callback: (value) => Math.floor(value)
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            color: this.getThemeColor('text'),
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+    },
+    
+    // Заглушка для случаев без данных
+    showNoDataChart(ctx, message) {
+        const canvas = ctx.canvas;
+        const parent = canvas.parentNode;
+        
+        // Очищаем canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Показываем сообщение
+        const messageEl = document.createElement('div');
+        messageEl.className = 'no-data-message text-gray-400 text-center p-4';
+        messageEl.style.position = 'absolute';
+        messageEl.style.top = '50%';
+        messageEl.style.left = '50%';
+        messageEl.style.transform = 'translate(-50%, -50%)';
+        messageEl.style.width = '100%';
+        messageEl.innerHTML = `
+            <i class="fas fa-chart-pie text-3xl mb-2 opacity-50"></i>
+            <p class="text-sm">${message}</p>
+        `;
+        
+        // Удаляем старые сообщения
+        parent.querySelectorAll('.no-data-message').forEach(el => el.remove());
+        parent.appendChild(messageEl);
+    },
+    
+    // Расчет данных для тепловой карты
+    calculateHeatmapData(trackers) {
+        const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Пн=0, Вс=6
+        
+        trackers.forEach(tracker => {
+            if (tracker.checkedDays && tracker.checkedDays.length > 0) {
+                // Используем дату обновления для определения дня недели
+                const lastUpdate = new Date(tracker.updatedAt);
+                const dayOfWeek = lastUpdate.getDay(); // 0 = Вс, 1 = Пн, ..., 6 = Сб
+                
+                // Преобразуем в наш формат (Пн=0, Вс=6)
+                const ourDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                dayCounts[ourDay]++;
+            }
+        });
+        
+        // Находим максимальное значение для нормализации
+        const max = Math.max(...dayCounts, 1);
+        
+        return {
+            weeklyAverage: dayCounts,
+            normalized: dayCounts.map(count => (count / max) * 10)
+        };
+    },
+    
+    // Расчет данных по категориям с прогрессом
+    calculateCategoryProgress(trackers) {
+        const categories = {
+            health: { count: 0, progress: 0 },
+            learning: { count: 0, progress: 0 },
+            productivity: { count: 0, progress: 0 },
+            mindfulness: { count: 0, progress: 0 },
+            other: { count: 0, progress: 0 }
+        };
+        
+        trackers.forEach(tracker => {
+            if (categories.hasOwnProperty(tracker.category)) {
+                categories[tracker.category].count++;
+                categories[tracker.category].progress += tracker.progress || 0;
+            } else {
+                categories.other.count++;
+                categories.other.progress += tracker.progress || 0;
+            }
+        });
+        
+        // Вычисляем средний прогресс для каждой категории
+        Object.keys(categories).forEach(key => {
+            if (categories[key].count > 0) {
+                categories[key].progress = Math.round(categories[key].progress / categories[key].count);
+            }
+        });
+        
+        return {
+            labels: [
+                I18n.t('category_health'),
+                I18n.t('category_learning'),
+                I18n.t('category_productivity'),
+                I18n.t('category_mindfulness'),
+                I18n.t('category_other')
+            ],
+            values: Object.values(categories).map(c => c.count),
+            progress: Object.values(categories).map(c => c.progress),
+            colors: ['#3b82f6', '#10b981', '#8b5cf6', '#f97316', '#ec4899']
+        };
+    },
+    
+    // Расчет данных для временной линии
+    calculateCompletionData(trackers) {
+        // Сортируем трекеры по дате создания
+        const sortedTrackers = [...trackers].sort((a, b) => 
+            new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        
+        const labels = [];
+        const completed = [];
+        const active = [];
+        
+        let completedCount = 0;
+        let activeCount = 0;
+        
+        sortedTrackers.forEach((tracker, index) => {
+            const date = new Date(tracker.createdAt).toLocaleDateString(
+                I18n.currentLang === 'ru' ? 'ru-RU' : 'en-US',
+                { day: 'numeric', month: 'short' }
+            );
+            
+            labels.push(date);
+            
+            if (tracker.progress === 100) {
+                completedCount++;
+            } else if (tracker.checkedDays && tracker.checkedDays.length > 0) {
+                activeCount++;
+            }
+            
+            completed.push(completedCount);
+            active.push(activeCount);
+        });
+        
+        // Если меньше 3 точек, добавляем текущую дату для наглядности
+        if (labels.length < 3) {
+            const today = new Date().toLocaleDateString(
+                I18n.currentLang === 'ru' ? 'ru-RU' : 'en-US',
+                { day: 'numeric', month: 'short' }
+            );
+            
+            if (!labels.includes(today)) {
+                labels.push(today);
+                completed.push(completedCount);
+                active.push(activeCount);
+            }
+        }
+        
+        return { labels, completed, active };
+    },
+    
+    // Получение цветов в зависимости от темы
+    getThemeColor(element) {
+        const isDark = document.documentElement.classList.contains('dark');
+        const colors = {
+            text: isDark ? '#e5e7eb' : '#374151',
+            grid: isDark ? '#374151' : '#e5e7eb',
+            background: isDark ? '#1f2937' : '#ffffff',
+            tooltip: isDark ? '#374151' : '#ffffff', // Светлый фон для подсказок в светлой теме
+            tooltipText: isDark ? '#e5e7eb' : '#1f2937', // Темный текст для подсказок в светлой теме
+            tooltipTitle: isDark ? '#ffffff' : '#111827' // Еще темнее для заголовка
+        };
+        return colors[element] || colors.text;
+    },
+    
+    // Обновление всех графиков
+    updateCharts() {
+        // Очищаем заглушки
+        document.querySelectorAll('.no-data-message').forEach(el => el.remove());
+        
+        // Пересоздаем графики
+        this.createStreakHeatmap();
+        this.createCategoryChart();
+        this.createCompletionTimeline();
+    },
+    
+    // Наблюдатель за изменением темы
+    initThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    this.updateCharts();
+                }
+            });
+        });
+        
+        observer.observe(document.documentElement, { attributes: true });
+    }
+};
+
 const I18n = {
     currentLang: 'ru',
     translations: {
@@ -175,7 +726,6 @@ const I18n = {
             modal_support_description: "Ваша поддержка помогает улучшать трекер и добавлять новые функции",
             modal_support_methods: "Способы поддержки",
             support_bank_card: "Банковская карта",
-            support_ton_wallet: "TON кошелек",
             support_note: "Любая сумма помогает развитию проекта",
             modal_delete_title: "Удалить трекер",
             modal_delete_confirm: "Вы уверены?",
@@ -192,7 +742,6 @@ const I18n = {
             notification_link_copied: "Ссылка скопирована в буфер обмена!",
             notification_pdf_downloaded: "PDF успешно скачан!",
             notification_card_copied: "Номер карты скопирован",
-            notification_ton_copied: "TON адрес скопирован",
             notification_dark_theme: "Темная тема включена",
             notification_light_theme: "Светлая тема включена",
             error_fill_fields: "Пожалуйста, заполните все поля корректно",
@@ -213,7 +762,53 @@ const I18n = {
             delete: "Удалить",
             of: "из",
             days: "дней",
-            theme: "Тема"
+            theme: "Тема",
+            stat_streak_days: "Дней подряд",
+            chart_progress_by_day: "Прогресс по дням",
+            chart_by_category: "Трекеры по категориям",
+            chart_progress_distribution: "Распределение прогресса",
+            completed_days: "Выполнено дней",
+            number_of_trackers: "Количество трекеров",
+            chart_activity: "Активность",
+            chart_heatmap_title: "Активность по дням недели",
+            chart_heatmap_subtitle: "Чем темнее цвет, тем больше трекеров вы отмечали",
+            chart_avg_trackers: "Среднее количество",
+            chart_category_title: "Распределение по категориям",
+            chart_timeline_title: "Динамика завершения трекеров",
+            chart_completed: "Завершено",
+            chart_active: "Активные",
+            chart_trackers: "трек.",
+            chart_no_categories: "Создайте трекеры в разных категориях",
+            chart_no_completions: "Отмечайте прогресс, чтобы увидеть динамику",
+            weekday_monday: "Понедельник",
+            weekday_tuesday: "Вторник",
+            weekday_wednesday: "Среда",
+            weekday_thursday: "Четверг",
+            weekday_friday: "Пятница",
+            weekday_saturday: "Суббота",
+            weekday_sunday: "Воскресенье",
+            weekday_short_mon: "Пн",
+            weekday_short_tue: "Вт",
+            weekday_short_wed: "Ср",
+            weekday_short_thu: "Чт",
+            weekday_short_fri: "Пт",
+            weekday_short_sat: "Сб",
+            weekday_short_sun: "Вс",
+            
+            tooltip_one_tracker: "1 трекер",
+            tooltip_trackers: "трекеров в среднем",
+            tooltip_trackers_few: "трекера в среднем", 
+            on_average: "в среднем",
+            day_capitalized: "День",
+            stat_completion_rate: "Общий прогресс",
+            stat_best_day: "Лучший день",
+            stat_favorite_category: "Любимая категория",
+            day_one: "день",
+            day_few: "дня",
+            day_many: "дней",
+            tracker_one: "трекер",
+            tracker_few: "трекера",
+            tracker_many: "трекеров"
         },
         en: {
             app_name: "30-Day Tracker",
@@ -293,7 +888,6 @@ const I18n = {
             modal_support_description: "Your support helps improve the tracker and add new features",
             modal_support_methods: "Support Methods",
             support_bank_card: "Bank Card",
-            support_ton_wallet: "TON Wallet",
             support_note: "Any amount helps project development",
             modal_delete_title: "Delete Tracker",
             modal_delete_confirm: "Are you sure?",
@@ -310,7 +904,6 @@ const I18n = {
             notification_link_copied: "Link copied to clipboard!",
             notification_pdf_downloaded: "PDF downloaded successfully!",
             notification_card_copied: "Card number copied",
-            notification_ton_copied: "TON address copied",
             notification_dark_theme: "Dark theme enabled",
             notification_light_theme: "Light theme enabled",
             error_fill_fields: "Please fill in all fields correctly",
@@ -331,7 +924,51 @@ const I18n = {
             delete: "Delete",
             of: "of",
             days: "days",
-            theme: "Theme"
+            theme: "Theme",
+            stat_streak_days: "Day streak",
+            chart_progress_by_day: "Progress by Day",
+            chart_by_category: "Trackers by Category",
+            chart_progress_distribution: "Progress Distribution",
+            completed_days: "Completed days",
+            number_of_trackers: "Number of trackers",
+            chart_activity: "Activity",
+            chart_heatmap_title: "Activity by Day of Week",
+            chart_heatmap_subtitle: "Darker color means more trackers marked",
+            chart_avg_trackers: "Average count",
+            chart_category_title: "Distribution by Category",
+            chart_timeline_title: "Tracker Completion Dynamics",
+            chart_completed: "Completed",
+            chart_active: "Active",
+            chart_trackers: "tr.",
+            chart_no_categories: "Create trackers in different categories",
+            chart_no_completions: "Mark progress to see dynamics",
+            weekday_monday: "Monday",
+            weekday_tuesday: "Tuesday",
+            weekday_wednesday: "Wednesday",
+            weekday_thursday: "Thursday",
+            weekday_friday: "Friday",
+            weekday_saturday: "Saturday",
+            weekday_sunday: "Sunday",
+            weekday_short_mon: "Mon",
+            weekday_short_tue: "Tue",
+            weekday_short_wed: "Wed",
+            weekday_short_thu: "Thu",
+            weekday_short_fri: "Fri",
+            weekday_short_sat: "Sat",
+            weekday_short_sun: "Sun",
+            tooltip_one_tracker: "1 tracker",
+            tooltip_trackers: "trackers on average",
+            on_average: "on average",
+            day_capitalized: "Day",
+            stat_completion_rate: "Overall progress",
+            stat_best_day: "Best day",
+            stat_favorite_category: "Favorite category",
+            day_one: "day",
+            day_few: "days",
+            day_many: "days",
+            tracker_one: "tracker",
+            tracker_few: "trackers",
+            tracker_many: "trackers",
         }
     },
 
@@ -611,6 +1248,51 @@ const TrackerStorage = {
             Utils.showNotification(I18n.t('error_saving_data', 'Ошибка сохранения данных'), 'error');
             return false;
         }
+    },
+
+    calculateGlobalStreak() {
+        const trackers = this.getTrackers();
+        if (trackers.length === 0) return 0;
+        
+        // Собираем все дни, когда была активность
+        const activeDays = new Set();
+        
+        trackers.forEach(tracker => {
+            if (tracker.checkedDays && tracker.checkedDays.length > 0) {
+                // Используем дату последнего обновления трекера
+                const lastActive = new Date(tracker.updatedAt);
+                activeDays.add(lastActive.toDateString());
+            }
+        });
+        
+        if (activeDays.size === 0) return 0;
+        
+        // Проверяем сегодняшний день
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        
+        // Если сегодня нет активности, но вчера есть - streak = 0 (прервалась)
+        // Если сегодня нет и вчера нет - streak = 0
+        if (!activeDays.has(today)) {
+            return 0;
+        }
+        
+        // Считаем streak от сегодня назад
+        let streak = 1; // Сегодняшний день
+        let checkDate = new Date();
+        
+        while (true) {
+            checkDate.setDate(checkDate.getDate() - 1);
+            const dateStr = checkDate.toDateString();
+            
+            if (activeDays.has(dateStr)) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
     },
     
     saveTracker(tracker) {
@@ -1030,6 +1712,10 @@ const App = {
         this.loadTrackers();
         this.checkUrlHash();
         this.initModals();
+
+        if (typeof ChartManager !== 'undefined') {
+            ChartManager.init();
+        }
     },
     
     initMobileMenu() {
@@ -1314,30 +2000,147 @@ const App = {
     updateStatistics() {
         const trackers = TrackerStorage.getTrackers();
         
+        // Существующие показатели
         let completedDays = 0;
         let activeTrackers = 0;
         let totalProgress = 0;
+        let totalPossibleDays = 0; // Для расчета общего процента
+        
+        // Новые показатели
+        const categoryCount = {
+            health: 0,
+            learning: 0,
+            productivity: 0,
+            mindfulness: 0,
+            other: 0
+        };
+        
+        const dayActivity = Array(30).fill(0); // Активность по дням месяца
         
         trackers.forEach(tracker => {
             const days = tracker.checkedDays || [];
             const progress = tracker.progress || 0;
             
+            // Существующие расчеты
             completedDays += days.length;
             totalProgress += progress;
             if (days.length > 0) activeTrackers++;
+            totalPossibleDays += 30; // Каждый трекер может иметь до 30 дней
+            
+            // Подсчет по категориям
+            if (categoryCount.hasOwnProperty(tracker.category)) {
+                categoryCount[tracker.category]++;
+            } else {
+                categoryCount.other++;
+            }
+            
+            // Активность по дням месяца
+            days.forEach(day => {
+                dayActivity[day - 1]++;
+            });
         });
         
+        // Средний прогресс
         const averageProgress = trackers.length > 0 ? Math.round(totalProgress / trackers.length) : 0;
         
+        // Общий процент завершения (от всех возможных дней)
+        const totalCompletedDays = completedDays;
+        const completionRate = totalPossibleDays > 0 
+            ? Math.round((totalCompletedDays / totalPossibleDays) * 100) 
+            : 0;
+        
+        // Самый продуктивный день месяца
+        const maxDayActivity = Math.max(...dayActivity);
+        const bestDayIndex = dayActivity.indexOf(maxDayActivity) + 1;
+        
+        // Любимая категория
+        let favoriteCategory = 'other';
+        let maxCategoryCount = 0;
+        for (const [category, count] of Object.entries(categoryCount)) {
+            if (count > maxCategoryCount) {
+                maxCategoryCount = count;
+                favoriteCategory = category;
+            }
+        }
+        
+        // Название любимой категории
+        const categoryNames = {
+            health: I18n.t('category_health'),
+            learning: I18n.t('category_learning'),
+            productivity: I18n.t('category_productivity'),
+            mindfulness: I18n.t('category_mindfulness'),
+            other: I18n.t('category_other')
+        };
+        const favoriteCategoryName = categoryNames[favoriteCategory] || I18n.t('category_other');
+        
+        // Streak
+        const streak = typeof TrackerStorage.calculateGlobalStreak === 'function' 
+            ? TrackerStorage.calculateGlobalStreak() 
+            : 0;
+        
+        // Обновляем существующие элементы
         const totalTrackersEl = document.getElementById('total-trackers');
         const activeTrackersEl = document.getElementById('active-trackers');
         const completedDaysEl = document.getElementById('completed-days');
         const averageProgressEl = document.getElementById('average-progress');
+        const streakEl = document.getElementById('streak-days');
         
         if (totalTrackersEl) totalTrackersEl.textContent = trackers.length;
         if (activeTrackersEl) activeTrackersEl.textContent = activeTrackers;
         if (completedDaysEl) completedDaysEl.textContent = completedDays;
         if (averageProgressEl) averageProgressEl.textContent = averageProgress + '%';
+        if (streakEl) streakEl.textContent = streak;
+        
+        // Обновляем новые элементы (только 3)
+        const completionRateEl = document.getElementById('completion-rate');
+        const bestDayEl = document.getElementById('best-day');
+        const favoriteCategoryEl = document.getElementById('favorite-category');
+        
+        if (completionRateEl) completionRateEl.textContent = completionRate + '%';
+        
+        if (bestDayEl) {
+            if (maxDayActivity > 0) {
+                const weekdaysFull = [
+                    I18n.t('weekday_monday', 'Понедельник'),
+                    I18n.t('weekday_tuesday', 'Вторник'),
+                    I18n.t('weekday_wednesday', 'Среда'),
+                    I18n.t('weekday_thursday', 'Четверг'),
+                    I18n.t('weekday_friday', 'Пятница'),
+                    I18n.t('weekday_saturday', 'Суббота'),
+                    I18n.t('weekday_sunday', 'Воскресенье')
+                ];
+                
+                const weekdaysShort = [
+                    I18n.t('weekday_short_mon', 'Пн'),
+                    I18n.t('weekday_short_tue', 'Вт'),
+                    I18n.t('weekday_short_wed', 'Ср'),
+                    I18n.t('weekday_short_thu', 'Чт'),
+                    I18n.t('weekday_short_fri', 'Пт'),
+                    I18n.t('weekday_short_sat', 'Сб'),
+                    I18n.t('weekday_short_sun', 'Вс')
+                ];
+                
+                const dayOfWeekIndex = (bestDayIndex - 1) % 7;
+                const dayOfWeek = weekdaysFull[dayOfWeekIndex];
+                const dayOfWeekShort = weekdaysShort[dayOfWeekIndex];
+                
+                bestDayEl.innerHTML = `<span class="hidden sm:inline">${dayOfWeek}</span>
+                                    <span class="sm:hidden">${dayOfWeekShort}</span>`;
+            } else {
+                bestDayEl.textContent = '—';
+            }
+        }
+        
+        if (favoriteCategoryEl) {
+            favoriteCategoryEl.textContent = maxCategoryCount > 0 
+                ? favoriteCategoryName 
+                : '—';
+        }
+        
+        // Обновляем графики
+        if (typeof ChartManager !== 'undefined') {
+            ChartManager.updateCharts();
+        }
     },
     
     openTracker(trackerId) {
@@ -1498,10 +2301,34 @@ function copyShareUrl() {
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
     
+    // Закрытие модальных окон при клике на фон (оверлей)
     document.querySelectorAll('[id$="-modal"]').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal(modal.id);
+        modal.addEventListener('click', function(e) {
+            // Важно! Проверяем, что кликнули именно на сам модальный контейнер (оверлей)
+            // А не на его дочерние элементы
+            if (e.target === this) {
+                closeModal(this.id);
+            }
         });
+        
+        // Находим контейнер с содержимым модального окна
+        const modalContent = modal.querySelector('.modal-responsive, .bg-white');
+        if (modalContent) {
+            modalContent.addEventListener('click', function(e) {
+                e.stopPropagation(); // Останавливаем всплытие события
+            });
+        }
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+                if (!modal.classList.contains('hidden')) {
+                    closeModal(modal.id);
+                }
+            });
+        }
     });
     
     window.openModal = openModal;
