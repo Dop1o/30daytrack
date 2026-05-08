@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6FG4W3P9XF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-6FG4W3P9XF');
+    </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>30-Дневный Челлендж Трекер — Создай и Отслеживай Свои Привычки</title>
+    
+    <meta name="description" content="Создавайте и отслеживайте свои 30-дневные челленджи. Сохраняйте прогресс, получайте статистику и достигайте целей.">
+    <meta name="keywords" content="трекер привычек, 30-дневный челлендж, самосовершенствование, привычки, цели, планирование, прогресс">
+    <meta name="author" content="30-Дневный Трекер">
+    
+    <!-- Favicon и иконки для браузеров и поисковых систем -->
+    <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-192.png">
+    <link rel="shortcut icon" href="images/icon-192.png" type="image/png">
+    
+    <!-- Для поисковых систем -->
+    <meta name="msapplication-TileImage" content="images/icon-192.png">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="30-Дневный Трекер Привычек">
+    <meta property="og:description" content="Отслеживай привычки и достигай целей за 30 дней">
+    <meta property="og:image" content="https://30daytrack.vercel.app/images/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://30daytrack.vercel.app">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="30-Дневный Трекер Привычек">
+    <meta name="twitter:description" content="Отслеживай привычки и достигай целей за 30 дней">
+    <meta name="twitter:image" content="https://30daytrack.vercel.app/images/icon-512.png">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="30DayTrack">
+    <link rel="apple-touch-icon" href="images/icon-192.png">
+    <link rel="mask-icon" href="images/icon-192.png" color="#3b82f6">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Динамический PWA manifest -->
+    <script>
+        (function() {
+            let currentLang = 'ru';
+            try {
+                const savedLang = localStorage.getItem('tracker_language');
+                const browserLang = navigator.language.startsWith('en') ? 'en' : 'ru';
+                currentLang = savedLang || browserLang;
+            } catch(e) {}
+            
+            const manifestFile = currentLang === 'ru' ? '/manifest/manifest-ru.json' : '/manifest/manifest-en.json';
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestFile;
+            document.head.appendChild(link);
+        })();
+    </script>
+
+</head>
+
+<body class="bg-gray-50" data-lang="ru">
+    
+    <!-- Основные модули -->
+    <script src="scripts/i18n.js"></script>
+    <script src="scripts/data-manager.js"></script>
+    <script src="scripts/script.js"></script>
+
+    <!-- Навигация -->
+    <nav class="bg-white shadow-sm py-4 sticky top-0 z-40 dark:bg-gray-800 dark:border-gray-700">
+        <div class="container mx-auto px-4">
+            <div class="header">
+                <div class="logo">
+                    <a href="index.html" class="text-xl sm:text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors flex items-center dark:text-white dark:hover:text-blue-400">
+                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                        <span class="app-name" data-translate="app_name">30-Дневный Трекер</span>
+                    </a>
+                </div>
+
+                <div class="nav-elements hidden md:flex gap-4 lg:gap-6 items-center">
+                    <a href="#form-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700" data-translate="nav_create_tracker">Создать трекер</a>
+                    <a href="#my-trackers-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700" data-translate="nav_my_trackers">Мои трекеры</a>
+                    <a href="#preview-heading" class="text-gray-600 hover:text-blue-600 transition-colors text-sm lg:text-base px-3 py-2 rounded-lg hover:bg-gray-50 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700" data-translate="nav_preview">Превью</a>
+                    
+                    <!-- Переключатель языка -->
+                    <div class="language-switcher ml-2">
+                        <button id="language-toggle" class="language-btn dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600">
+                            <span id="current-lang-text">RU</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="language-dropdown" class="language-dropdown dark:bg-gray-800 dark:border-gray-700">
+                            <div class="language-option active dark:text-gray-300 dark:hover:bg-gray-700" data-lang="ru" onclick="I18n.setLanguage('ru')">
+                                <span>RU</span>
+                            </div>
+                            <div class="language-option dark:text-gray-300 dark:hover:bg-gray-700" data-lang="en" onclick="I18n.setLanguage('en')">
+                                <span>US</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Переключатель темы -->
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" 
+                        title="Сменить тему" data-title-ru="Сменить тему" data-title-en="Toggle theme">
+                        <i class="fas fa-moon text-gray-600 dark:text-gray-300"></i>
+                        <i class="fas fa-sun text-gray-600 dark:text-yellow-400 hidden"></i>
+                    </button>
+
+                    <button id="install-app-btn" 
+                            style="display: none;"
+                            class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-700 hover:to-emerald-700 transition-all flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        <span data-translate="install_button">Установить</span>
+                    </button>
+
+                </div>
+                <div class="visible md:hidden flex items-center gap-2">
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-600 p-2 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:bg-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Мобильное меню -->
+        <div id="mobile-menu" class="md:hidden mt-3 hidden bg-white rounded-lg shadow-md p-4 mx-4 dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex flex-col gap-1">
+                <a href="#form-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700">
+                    <i class="fas fa-plus-circle mr-3 text-blue-500"></i>
+                    <span data-translate="nav_create_tracker">Создать трекер</span>
+                </a>
+                <a href="#my-trackers-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700">
+                    <i class="fas fa-list mr-3 text-green-500"></i>
+                    <span data-translate="nav_my_trackers">Мои трекеры</span>
+                </a>
+                <a href="#preview-heading" class="text-gray-600 hover:text-blue-600 transition-colors py-3 px-4 rounded-lg hover:bg-gray-50 flex items-center dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700">
+                    <i class="fas fa-eye mr-3 text-purple-500"></i>
+                    <span data-translate="nav_preview">Превью</span>
+                </a>
+                
+                <!-- Переключатель языка в мобильном меню -->
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-3 mt-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 font-medium dark:text-gray-300" data-translate="language">Язык</span>
+                        <div class="flex gap-2">
+                            <button onclick="I18n.setLanguage('ru')" 
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors mobile-lang-btn active dark:text-white"
+                                    data-lang="ru">
+                                <span>RU</span>
+                            </button>
+                            <button onclick="I18n.setLanguage('en')" 
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors mobile-lang-btn dark:text-gray-300"
+                                    data-lang="en">
+                                <span>US</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Переключатели: Установка + Тема -->
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-3 mt-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600 dark:text-gray-300 font-medium" data-translate="theme">Тема</span>
+                        <div class="flex gap-2">
+                            <!-- Кнопка установки PWA -->
+                            <button id="mobile-install-btn" 
+                                    style="display: none;"
+                                    class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50">
+                                <i class="fas fa-download"></i>
+                                <span data-translate="install_button">Установить</span>
+                            </button>
+                            
+                            <!-- Кнопка смены темы -->
+                            <button id="mobile-theme-toggle" 
+                                class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-moon text-gray-600 dark:text-gray-300"></i>
+                                <i class="fas fa-sun text-yellow-500 hidden"></i>
+                            </button>
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Герой секция -->
+    <header class="bg-gradient-to-br from-blue-50 to-cyan-50 py-12 md:py-20 lg:py-24 dark:from-blue-900/20 dark:to-cyan-900/20">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 dark:text-white" data-translate="hero_title">
+                Создай свой челлендж на 30 дней
+            </h1>
+            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 text-center max-w-2xl mx-auto px-2 dark:text-gray-300 text-center" data-translate="hero_subtitle">
+                Создавай трекеры, сохраняй прогресс и достигай целей
+            </p>
+        </div>
+    </header>
+
+    <!-- Быстрые действия -->
+    <section class="py-8 md:py-12 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#form-heading" 
+                   class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-base md:text-lg hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl text-center">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    <span data-translate="quick_action_create">Создать новый трекер</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Мои трекеры -->
+    <section class="py-10 md:py-14 lg:py-16 bg-gray-50 dark:bg-gray-900" id="my-trackers-heading">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center mb-8 md:mb-12 dark:text-white" data-translate="my_trackers_title">
+                Мои трекеры
+            </h2>
+            
+            <div id="trackers-list-container" class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Трекеры будут добавляться динамически -->
+                </div>
+                
+                <div id="empty-trackers-state" class="text-center py-12 empty-state">
+                    <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center dark:bg-gray-800">
+                        <i class="fas fa-chart-line text-gray-400 text-3xl dark:text-gray-500"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-600 text-center mb-2 dark:text-gray-400" data-translate="empty_state_title">У вас еще нет трекеров</h3>
+                    <p class="text-gray-500 mb-6 dark:text-gray-500 text-center" data-translate="empty_state_description">Создайте свой первый трекер и начните отслеживать прогресс</p>
+                    
+                    <!-- Кнопки действий -->
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                        <a href="#form-heading" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all">
+                            <i class="fas fa-plus-circle mr-2"></i>
+                            <span data-translate="empty_state_action">Создать первый трекер</span>
+                        </a>
+                        
+                        <button id="import-from-empty-btn" class="inline-flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300">
+                            <i class="fas fa-upload mr-2"></i>
+                            <span data-translate="empty_state_import">Импортировать данные</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Подсказка -->
+                    <p class="text-xs text-gray-400 mt-4 dark:text-gray-500">
+                        <i class="far fa-file-alt mr-1"></i>
+                        <span data-translate="empty_state_hint">Поддерживается формат JSON</span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div id="statistics-container" class="hidden">
+                <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4 md:mb-6 dark:text-white" data-translate="statistics_title">Статистика</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 dark:bg-blue-900/30">
+                                <i class="fas fa-chart-bar text-blue-600 text-xl dark:text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_total_trackers">Всего трекеров</p>
+                                <p id="total-trackers" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 dark:bg-green-900/30">
+                                <i class="fas fa-check-circle text-green-600 text-xl dark:text-green-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_active_trackers">Активные трекеры</p>
+                                <p id="active-trackers" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 dark:bg-purple-900/30">
+                                <i class="fas fa-chart-pie text-purple-600 text-xl dark:text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_average_progress">Средний прогресс</p>
+                                <p id="average-progress" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4 dark:bg-orange-900/30">
+                                <i class="fas fa-trophy text-yellow-500 text-xl dark:text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completed_days">Завершено дней</p>
+                                <p id="completed-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                                <i class="fas fa-fire text-yellow-600 text-xl dark:text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_streak_days">Дней подряд</p>
+                                <p id="streak-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Процент завершения (общий) -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 dark:bg-indigo-900/30">
+                                <i class="fas fa-percent text-indigo-600 text-xl dark:text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completion_rate">Общий прогресс</p>
+                                <p id="completion-rate" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Самый продуктивный день -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                                <i class="fas fa-star text-yellow-600 text-xl dark:text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_best_day">Лучший день</p>
+                                <p id="best-day" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Любимая категория -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4 dark:bg-pink-900/30">
+                                <i class="fas fa-heart text-pink-600 text-xl dark:text-pink-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_favorite_category">Любимая категория</p>
+                                <p id="favorite-category" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Графики -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                    <!-- Тепловая карта активности по дням недели -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="streak-heatmap"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Круговая диаграмма по категориям -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- График динамики завершения -->
+                    <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800 lg:col-span-2">
+                        <div class="chart-container" style="position: relative; height: 280px; width: 100%;">
+                            <canvas id="completion-timeline"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Форма создания -->
+    <section class="py-10 md:py-14 lg:py-16 bg-white dark:bg-gray-800" id="form-heading">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center mb-8 md:mb-12 dark:text-white" data-translate="form_title">
+                Создай новый трекер
+            </h2>
+            
+            <form id="tracker-form" class="space-y-6" novalidate>
+                <div>
+                    <label for="challenge-name" class="block text-sm md:text-base font-medium text-gray-700 mb-2 dark:text-gray-300" data-translate="form_name_label">
+                        Название твоего челленджа <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="challenge-name" name="challenge-name"
+                           placeholder="Например: Читать каждый день"
+                           required maxlength="100"
+                           data-placeholder-ru="Например: Читать каждый день"
+                           data-placeholder-en="Example: Read every day"
+                           class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
+                    <span id="challenge-name-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label for="category" class="block text-sm md:text-base font-medium text-gray-700 mb-2 dark:text-gray-300" data-translate="form_category_label">
+                        Категория <span class="text-red-500">*</span>
+                    </label>
+                    <select id="category" name="category" required
+                            class="w-full px-4 py-4 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm md:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="" data-translate="form_category_placeholder">Выбери категорию</option>
+
+                        <option value="health" data-translate="category_health">Здоровье</option>
+                        <option value="sport" data-translate="category_sport">Спорт</option>
+
+                        <option value="learning" data-translate="category_learning">Обучение</option>
+                        <option value="growth" data-translate="category_growth">Рост</option>
+
+                        <option value="productivity" data-translate="category_productivity">Продуктивность</option>
+
+                        <option value="mindfulness" data-translate="category_mindfulness">Осознанность</option>
+                        <option value="psychology" data-translate="category_psychology">Психология</option>
+
+                        <option value="other" data-translate="category_other">Другое</option>
+                    </select>
+                    <span id="category-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label for="goal" class="block text-sm md:text-base font-medium text-gray-700 mb-2 dark:text-gray-300" data-translate="form_goal_label">
+                        Моя цель на 30 дней <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="goal" name="goal" rows="4"
+                              placeholder="Например: Прочитать 300 страниц, заниматься спортом 30 минут в день"
+                              required maxlength="500"
+                              data-placeholder-ru="Например: Прочитать 300 страниц, заниматься спортом 30 минут в день"
+                              data-placeholder-en="Example: Read 300 pages, exercise 30 minutes daily"
+                              class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none text-sm md:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"></textarea>
+                    <span id="goal-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label for="note" class="block text-sm md:text-base font-medium text-gray-700 mb-2 dark:text-gray-300" data-translate="form_note_label">
+                        Заметка к трекеру
+                    </label>
+                    <textarea id="note" name="note" rows="3"
+                              placeholder="Например: почему эта цель важна и что поможет не срываться"
+                              maxlength="1000"
+                              data-placeholder-ru="Например: почему эта цель важна и что поможет не срываться"
+                              data-placeholder-en="Example: why this goal matters and what will help stay consistent"
+                              class="w-full px-4 py-3 md:py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none text-sm md:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"></textarea>
+                    <span id="note-error" class="hidden text-red-500 text-xs md:text-sm mt-1"></span>
+                </div>
+
+                <div>
+                    <label class="block text-sm md:text-base font-medium text-gray-700 mb-3 dark:text-gray-300" data-translate="form_color_label">
+                        Цвет трекера
+                    </label>
+                    
+                    <div class="color-palette">
+                        <!-- Основные 5 цветов -->
+                        <div class="color-grid color-grid-main">
+                            <input type="radio" id="color-blue" name="color" value="blue" class="hidden" checked>
+                            <label for="color-blue" class="color-label w-10 h-10 md:w-12 md:h-12 bg-blue-700 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Синий" data-title-ru="Синий" data-title-en="Blue"></label>
+
+                            <input type="radio" id="color-green" name="color" value="green" class="hidden">
+                            <label for="color-green" class="color-label w-10 h-10 md:w-12 md:h-12 bg-green-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Зеленый" data-title-ru="Зеленый" data-title-en="Green"></label>
+
+                            <input type="radio" id="color-purple" name="color" value="purple" class="hidden">
+                            <label for="color-purple" class="color-label w-10 h-10 md:w-12 md:h-12 bg-purple-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Фиолетовый" data-title-ru="Фиолетовый" data-title-en="Purple"></label>
+
+                            <input type="radio" id="color-orange" name="color" value="orange" class="hidden">
+                            <label for="color-orange" class="color-label w-10 h-10 md:w-12 md:h-12 bg-orange-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Оранжевый" data-title-ru="Оранжевый" data-title-en="Orange"></label>
+
+                            <input type="radio" id="color-pink" name="color" value="pink" class="hidden">
+                            <label for="color-pink" class="color-label w-10 h-10 md:w-12 md:h-12 bg-pink-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Розовый" data-title-ru="Розовый" data-title-en="Pink"></label>
+                        </div>
+
+                        
+
+                        <!-- Дополнительные цвета (скрыты по умолчанию) -->
+                        <div id="extra-colors" class="color-extra-grid hidden">
+                            <input type="radio" id="color-red" name="color" value="red" class="hidden">
+                            <label for="color-red" class="color-label w-10 h-10 md:w-12 md:h-12 bg-red-600 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Красный" data-title-ru="Красный" data-title-en="Red"></label>
+
+                            <input type="radio" id="color-yellow" name="color" value="yellow" class="hidden">
+                            <label for="color-yellow" class="color-label w-10 h-10 md:w-12 md:h-12 bg-yellow-400 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Желтый" data-title-ru="Желтый" data-title-en="Yellow"></label>
+
+                            <input type="radio" id="color-indigo" name="color" value="indigo" class="hidden">
+                            <label for="color-indigo" class="color-label w-10 h-10 md:w-12 md:h-12 bg-indigo-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Индиго" data-title-ru="Индиго" data-title-en="Indigo"></label>
+
+                            <input type="radio" id="color-teal" name="color" value="teal" class="hidden">
+                            <label for="color-teal" class="color-label w-10 h-10 md:w-12 md:h-12 bg-teal-300 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Бирюзовый" data-title-ru="Бирюзовый" data-title-en="Teal"></label>
+
+                            <input type="radio" id="color-cyan" name="color" value="cyan" class="hidden">
+                            <label for="color-cyan" class="color-label w-10 h-10 md:w-12 md:h-12 bg-cyan-300 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Голубой" data-title-ru="Голубой" data-title-en="Cyan"></label>
+
+                            <input type="radio" id="color-amber" name="color" value="amber" class="hidden">
+                            <label for="color-amber" class="color-label w-10 h-10 md:w-12 md:h-12 bg-amber-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Янтарный" data-title-ru="Янтарный" data-title-en="Amber"></label>
+
+                            <input type="radio" id="color-lime" name="color" value="lime" class="hidden">
+                            <label for="color-lime" class="color-label w-10 h-10 md:w-12 md:h-12 bg-lime-400 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Лайм" data-title-ru="Лайм" data-title-en="Lime"></label>
+
+                            <input type="radio" id="color-emerald" name="color" value="emerald" class="hidden">
+                            <label for="color-emerald" class="color-label w-10 h-10 md:w-12 md:h-12 bg-emerald-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Изумрудный" data-title-ru="Изумрудный" data-title-en="Emerald"></label>
+
+                            <input type="radio" id="color-fuchsia" name="color" value="fuchsia" class="hidden">
+                            <label for="color-fuchsia" class="color-label w-10 h-10 md:w-12 md:h-12 bg-fuchsia-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Фуксия" data-title-ru="Фуксия" data-title-en="Fuchsia"></label>
+
+                            <input type="radio" id="color-rose" name="color" value="rose" class="hidden">
+                            <label for="color-rose" class="color-label w-10 h-10 md:w-12 md:h-12 bg-rose-500 rounded-full cursor-pointer hover:scale-110 transition-all" tabindex="0" title="Розовый" data-title-ru="Розовый" data-title-en="Rose"></label>
+                        </div>
+                        <!-- Кружок с треугольником для раскрытия -->
+                        <div class="flex justify-center">
+                            <button type="button" id="color-expand-btn" class="color-expand-btn" title="Больше цветов" data-title-ru="Больше цветов" data-title-en="More colors">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 md:py-4 px-6 rounded-lg text-base md:text-lg hover:from-blue-700 hover:to-cyan-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="btn-text">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        <span data-translate="form_submit">Создать мой трекер!</span>
+                    </span>
+                    <span class="btn-loading hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>
+                        <span data-translate="form_loading">Создание...</span>
+                    </span>
+                </button>
+                <button type="button" id="cancel-edit-btn"
+                        class="w-full hidden bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 md:py-4 px-6 rounded-lg text-base md:text-lg transition-all dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300">
+                    <i class="fas fa-times mr-2"></i>
+                    <span data-translate="form_cancel_edit">Отменить редактирование</span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Превью -->
+    <section class="py-10 md:py-14 lg:py-16 bg-gray-50 dark:bg-gray-900" id="preview-heading">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center dark:text-white" data-translate="preview_title">Предпросмотр трекера</h2>
+            <div id="pdf-preview" class="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12 min-h-[400px] flex items-center justify-center dark:bg-gray-800">
+                <p class="text-gray-400 text-center text-lg sm:text-xl text-center px-4 dark:text-gray-500 text-center">
+                    <i class="fas fa-magic text-gray-300 text-center text-2xl mb-2 block dark:text-gray-600"></i>
+                    <span class="preview-empty text-gray-500 text-center dark:text-gray-600 text-center" data-translate="preview_empty">Твой трекер появится здесь после создания</span>
+                </p>
+            </div>
+            <div id="preview-actions" class="mt-6 flex flex-col sm:flex-row gap-4 justify-center hidden">
+                <button id="download-pdf-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                        >
+                    <i class="fas fa-download mr-2"></i>
+                    <span data-translate="preview_download_pdf">Скачать PDF</span>
+                </button>
+                <button id="copy-tracker-link-btn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                    <i class="fas fa-link mr-2"></i>
+                    <span data-translate="preview_copy_link">Копировать ссылку</span>
+                </button>
+                <button id="save-changes-btn"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 md:px-8 rounded-lg text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    <span data-translate="preview_save_changes">Сохранить изменения</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="bg-gray-900 text-gray-300 py-10 md:py-12 dark:bg-gray-950">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-6 md:mb-8">
+                    <h3 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4" data-translate="footer_title">30-Дневный Челлендж Трекер</h3>
+                </div>
+                
+                <nav class="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 md:gap-6 mb-6 md:mb-8">
+                    <button onclick="openModal('about-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200" data-translate="footer_about">О проекте</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('privacy-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200" data-translate="footer_privacy">Политика конфиденциальности</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('contact-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200" data-translate="footer_contact">Связаться</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button onclick="openModal('support-modal')" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200" data-translate="footer_support">Поддержать проект</button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+
+                    <button id="export-data-btn" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200 group" data-translate="footer_export">
+                        <span>Экспорт</span>
+                    </button>
+                    <span class="hidden sm:inline text-gray-500">•</span>
+                    <button id="import-data-btn" class="hover:text-white transition-colors text-sm md:text-base px-3 py-2 dark:hover:text-gray-200 group" data-translate="footer_import">
+                        <span>Импорт</span>
+                    </button>
+                    <!-- Скрытый input для импорта JSON -->
+                    <input type="file" id="import-file-input" accept=".json,application/json" class="hidden">
+                
+                </nav>
+                
+                <div class="text-center">
+                    <p class="text-xs md:text-sm text-gray-500 mb-2 dark:text-gray-600" data-translate="footer_copyright">
+                        © 2026 30-Дневный Челлендж Трекер. Все права защищены.
+                    </p>
+                    <p class="text-xs text-gray-600 text-center dark:text-gray-700 text-center" data-translate="footer_disclaimer">
+                        Инструмент для личного использования. Все данные хранятся локально.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальные окна -->
+    <!-- Модалка о проекте -->
+    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_about_title">О проекте</h2>
+                    <button onclick="closeModal('about-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 dark:from-blue-900/30 dark:to-cyan-900/30">
+                            <i class="fas fa-rocket text-blue-600 text-2xl md:text-3xl dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 text-center mb-3 md:mb-4 dark:text-white" data-translate="modal_about_app_name">30-дневный челлендж трекер</h3>
+                        <p class="text-gray-600 text-center text-sm md:text-base mb-4 md:mb-6 dark:text-gray-400 text-center" data-translate="modal_about_description">
+                            Простой и эффективный инструмент для формирования полезных привычек
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                        <div class="bg-blue-50 p-3 md:p-4 rounded-lg dark:bg-blue-900/20">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base dark:text-white">
+                                <i class="fas fa-bullseye text-blue-600 mr-2 dark:text-blue-400"></i>
+                                <span data-translate="modal_about_focus">Фокус на цели</span>
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_about_focus_desc">Помогает сфокусироваться на одной важной цели на 30 дней</p>
+                        </div>
+                        <div class="bg-green-50 p-3 md:p-4 rounded-lg dark:bg-green-900/20">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base dark:text-white">
+                                <i class="fas fa-chart-line text-green-600 mr-2 dark:text-green-400"></i>
+                                <span data-translate="modal_about_visual">Визуальный прогресс</span>
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_about_visual_desc">Красивый трекер мотивирует продолжать каждый день</p>
+                        </div>
+                        <div class="bg-purple-50 p-3 md:p-4 rounded-lg dark:bg-purple-900/20">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base dark:text-white">
+                                <i class="fas fa-heart text-purple-600 mr-2 dark:text-purple-400"></i>
+                                <span data-translate="modal_about_science">Основано на науке</span>
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_about_science_desc">21-30 дней достаточно для формирования новой привычки</p>
+                        </div>
+                        <div class="bg-orange-50 p-3 md:p-4 rounded-lg dark:bg-orange-900/20">
+                            <h4 class="font-semibold text-gray-900 mb-2 flex items-center text-sm md:text-base dark:text-white">
+                                <i class="fas fa-lock text-orange-600 mr-2 dark:text-orange-400"></i>
+                                <span data-translate="modal_about_privacy">Конфиденциальность</span>
+                            </h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_about_privacy_desc">Все данные хранятся локально в вашем браузере</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
+                    <button onclick="closeModal('about-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all"
+                            data-translate="modal_ok">
+                        Понятно
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка политики конфиденциальности -->
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_privacy_title">Политика конфиденциальности</h2>
+                    <button onclick="closeModal('privacy-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8 overflow-y-auto flex-grow">
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_storage_title">📁 Локальное хранение</h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_storage_desc">Все данные хранятся в вашем браузере. Никакая информация не отправляется на серверы.</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_confidential_title">🔒 Конфиденциальность</h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_confidential_desc">Мы не собираем и не обрабатываем ваши персональные данные.</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg dark:bg-gray-700">
+                            <h4 class="font-semibold text-gray-900 mb-2 text-sm md:text-base dark:text-white text-left" data-translate="modal_privacy_pdf_title">📄 Генерация PDF</h4>
+                            <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="modal_privacy_pdf_desc">PDF файлы создаются локально и сразу сохраняются на ваше устройство.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
+                    <button onclick="closeModal('privacy-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all"
+                            data-translate="modal_accept">
+                        Принимаю условия
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка контактов -->
+    <div id="contact-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_contact_title">Связаться</h2>
+                    <button onclick="closeModal('contact-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 dark:from-blue-900/30 dark:to-cyan-900/30">
+                            <i class="fas fa-envelope text-blue-600 text-2xl md:text-3xl dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_contact_question">Есть вопросы?</h3>
+                        <p class="text-gray-600 text-center text-sm md:text-base dark:text-gray-400" data-translate="modal_contact_description">Свяжитесь удобным способом</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg sm:rounded-xl border border-blue-100 p-4 md:p-6 dark:from-blue-900/20 dark:to-cyan-900/20 dark:border-blue-800/30">
+                        <h4 class="font-semibold text-gray-900 mb-2 md:mb-4 text-base md:text-lg dark:text-white">
+                            <i class="fas fa-user-circle text-blue-600 mr-2 dark:text-blue-400"></i>
+                            <span data-translate="modal_contact_developer">Контакты разработчика</span>
+                        </h4>
+                        
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex items-center">
+                                <div class="w-8 text-center">
+                                    <i class="fas fa-user text-blue-500 dark:text-blue-400"></i>
+                                </div>
+                                <div class="ml-3 md:ml-4">
+                                    <p class="text-gray-700 font-medium text-sm md:text-base dark:text-gray-300" data-translate="developer_name">Исмаил</p>
+                                    <p class="text-gray-600 text-xs md:text-sm dark:text-gray-400" data-translate="developer_role">Frontend разработчик</p>
+                                </div>
+                            </div>
+                            
+                            <a href="mailto:ismailgejbatov@gmail.com" class="block no-underline">
+                                <div class="flex items-center p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors group dark:bg-gray-700 dark:hover:bg-gray-600">
+                                    <div class="w-8 text-center">
+                                        <i class="fas fa-envelope text-blue-500 dark:text-blue-400"></i>
+                                    </div>
+                                    <div class="ml-3 md:ml-4 flex-grow">
+                                        <p class="text-gray-700 font-medium text-sm md:text-base dark:text-gray-300">Email</p>
+                                        <p class="text-blue-600 group-hover:text-blue-800 text-xs md:text-sm break-all dark:text-blue-400 dark:group-hover:text-blue-300">
+                                            ismailgejbatov@gmail.com
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://t.me/prosto_isko" target="_blank" class="block no-underline">
+                                <div class="flex items-center p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors group dark:bg-gray-700 dark:hover:bg-gray-600">
+                                    <div class="w-8 text-center">
+                                        <i class="fab fa-telegram text-blue-500 dark:text-blue-400"></i>
+                                    </div>
+                                    <div class="ml-3 md:ml-4 flex-grow">
+                                        <p class="text-gray-700 font-medium text-sm md:text-base dark:text-gray-300">Telegram</p>
+                                        <p class="text-blue-600 group-hover:text-blue-800 text-xs md:text-sm dark:text-blue-400 dark:group-hover:text-blue-300">
+                                            @prosto_isko
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
+                    <button onclick="closeModal('contact-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all"
+                            data-translate="modal_close">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка поддержки проекта -->
+    <div id="support-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_support_title">Поддержать проект</h2>
+                    <button onclick="closeModal('support-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6 md:mb-8">
+                        <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 dark:from-green-900/30 dark:to-emerald-900/30">
+                            <i class="fas fa-heart text-green-600 text-2xl md:text-3xl dark:text-green-400"></i>
+                        </div>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_support_subtitle">Поддержите развитие проекта</h3>
+                        <p class="text-gray-600 text-center text-sm md:text-base dark:text-gray-400" data-translate="modal_support_description">Ваша поддержка помогает улучшать трекер и добавлять новые функции</p>
+                    </div>
+
+                    
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border border-green-100 p-4 md:p-6 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-800/30">
+                            <h4 class="font-semibold text-green-900 mb-3 md:mb-4 text-base md:text-lg dark:text-white">
+                                <i class="fas fa-donate text-green-600 mr-2 dark:text-green-400"></i>
+                                <span data-translate="modal_support_methods">Способы поддержки</span>
+                            </h4>
+                            
+                            <div class="space-y-3 md:space-y-4">
+                                <!-- Банковская карта -->
+                                <div class="bg-white rounded-lg p-3 hover:bg-green-50 transition-colors dark:bg-gray-700 dark:hover:bg-gray-600">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-8 text-center">
+                                            <i class="fas fa-credit-card text-green-500 dark:text-green-400"></i>
+                                        </div>
+                                        <div class="ml-3 md:ml-4 flex-grow">
+                                            <p class="text-gray-700 font-medium text-sm md:text-base dark:text-gray-300" data-translate="support_bank_card">Банковская карта</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-green-600 font-mono text-sm md:text-base select-all flex-grow bg-green-50 px-3 py-2 rounded truncate dark:bg-green-900/30 dark:text-green-400" id="card-number">
+                                            2202 2055 7513 3944
+                                        </p>
+                                        <button onclick="copyCardNumber()" 
+                                                class="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+                                                title="Копировать номер карты"
+                                                data-title-ru="Копировать номер карты"
+                                                data-title-en="Copy card number">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                            <p class="flex items-center justify-center gap-1">
+                                <i class="fas fa-info-circle text-blue-500 dark:text-blue-400"></i>
+                                <span data-translate="support_note">Любая сумма помогает развитию проекта</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
+                    <button onclick="closeModal('support-modal')" 
+                            class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-green-700 hover:to-emerald-700 transition-all"
+                            data-translate="modal_close">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка подтверждения удаления -->
+    <div id="delete-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_delete_title">Удалить трекер</h2>
+                    <button onclick="closeModal('delete-tracker-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center dark:bg-red-900/30">
+                            <i class="fas fa-trash-alt text-red-600 text-3xl dark:text-red-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_delete_confirm">Вы уверены?</h3>
+                        <p class="text-gray-600 break-words overflow-hidden dark:text-gray-400" id="delete-tracker-message" data-translate="modal_delete_description">
+                            Это действие нельзя отменить. Все данные трекера будут удалены.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 flex gap-4 dark:bg-gray-700">
+                    <button onclick="closeModal('delete-tracker-modal')" 
+                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-3 px-6 rounded-lg text-sm md:text-base transition-all dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+                            data-translate="modal_cancel">
+                        Отмена
+                    </button>
+                    <button id="confirm-delete-btn"
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base transition-all"
+                            data-translate="modal_delete">
+                        Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка ссылки на трекер -->
+    <div id="share-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full modal-responsive dark:bg-gray-800">
+                <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
+                    <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_share_title">Поделиться трекером</h2>
+                    <button onclick="closeModal('share-tracker-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900/30">
+                            <i class="fas fa-link text-blue-600 text-3xl dark:text-blue-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_share_subtitle">Ссылка на трекер</h3>
+                        <p class="text-gray-600 mb-4 dark:text-gray-400" data-translate="modal_share_description">Сохраните эту ссылку, чтобы всегда иметь доступ к своему трекеру:</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4 dark:bg-gray-700">
+                            <p id="tracker-share-url" class="text-blue-600 font-mono text-sm break-all dark:text-blue-400"></p>
+                        </div>
+                        
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="copyShareUrl()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center">
+                                <i class="fas fa-copy mr-2"></i>
+                                <span data-translate="modal_share_copy">Копировать</span>
+                            </button>
+                            <a id="open-tracker-link" href="#" target="_blank"
+                               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center no-underline">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                <span data-translate="modal_share_open">Открыть</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
+                    <button onclick="closeModal('share-tracker-modal')" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all"
+                            data-translate="modal_close">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="simple-notification" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300 text-sm hidden dark:bg-gray-700">
+        <span id="notification-text"></span>
+    </div>
+
+    <!-- Регистрация Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('[PWA] SW registered:', reg.scope))
+                    .catch(err => console.error('[PWA] SW error:', err));
+            });
+        }
+        
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            deferredPrompt = e;
+            
+            // Показываем обе кнопки
+            const desktopBtn = document.getElementById('install-app-btn');
+            const mobileBtn = document.getElementById('mobile-install-btn');
+            
+            if (desktopBtn) desktopBtn.style.display = 'flex';
+            if (mobileBtn) mobileBtn.style.display = 'flex';
+            
+            // Обработчик для десктопной кнопки
+            if (desktopBtn) {
+                desktopBtn.onclick = () => {
+                    desktopBtn.style.display = 'none';
+                    if (mobileBtn) mobileBtn.style.display = 'none';
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(() => deferredPrompt = null);
+                    }
+                };
+            }
+            
+            // Обработчик для мобильной кнопки
+            if (mobileBtn) {
+                mobileBtn.onclick = () => {
+                    if (desktopBtn) desktopBtn.style.display = 'none';
+                    mobileBtn.style.display = 'none';
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(() => deferredPrompt = null);
+                    }
+                };
+            }
+        });
+        
+        // При успешной установке скрываем обе кнопки
+        window.addEventListener('appinstalled', () => {
+            const desktopBtn = document.getElementById('install-app-btn');
+            const mobileBtn = document.getElementById('mobile-install-btn');
+            if (desktopBtn) desktopBtn.style.display = 'none';
+            if (mobileBtn) mobileBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+    </script>
+
+    <!-- Кнопка скролла наверх (только для десктопа) -->
+    <button id="scroll-to-top-btn" 
+            class="fixed bottom-8 right-8 w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-30 hidden md:flex items-center justify-center"
+            aria-label="Прокрутить наверх"
+            data-title-ru="Прокрутить наверх"
+            data-title-en="Scroll to top">
+        <i class="fas fa-arrow-up text-xl"></i>
+    </button>
+</body>
+</html>
