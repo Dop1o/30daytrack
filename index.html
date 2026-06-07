@@ -217,6 +217,105 @@
         </div>
     </header>
 
+    <!-- Быстрые шаблоны -->
+    <section class="templates-section" id="templates-section" aria-labelledby="templates-section-title">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <button type="button" id="toggle-templates-btn" class="templates-section__toggle" title="Скрыть шаблоны">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            
+            <div class="templates-section__intro">
+                <h2 id="templates-section-title" class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3" data-translate="templates_section_title">
+                    Быстрые шаблоны
+                </h2>
+                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 templates-section__subtitle" data-translate="templates_section_subtitle">
+                    Популярные привычки — один клик, и трекер готов. Можно сразу отмечать прогресс.
+                </p>
+            </div>
+
+            <div class="templates-section__body">
+                    <div class="templates-grid" id="templates-grid">
+                        <article class="template-card" data-template="sugar">
+                            <div class="template-card__icon template-card__icon--green" aria-hidden="true"><i class="fas fa-cookie-bite"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_sugar_name">30 дней без сахара</span></h3>
+                            <p class="template-card__category" data-translate="category_health">Здоровье</p>
+                            <p class="template-card__desc" data-translate="template_sugar_desc">Меньше сладкого — больше энергии и контроля за питанием.</p>
+                            <button type="button" class="template-card__start" data-template-start="sugar"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="read">
+                            <div class="template-card__icon template-card__icon--blue" aria-hidden="true"><i class="fas fa-book-open"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_read_name">Читать 20 мин/день</span></h3>
+                            <p class="template-card__category" data-translate="category_learning">Обучение</p>
+                            <p class="template-card__desc" data-translate="template_read_desc">Ежедневное чтение без давления — только регулярность.</p>
+                            <button type="button" class="template-card__start" data-template-start="read"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="water">
+                            <div class="template-card__icon template-card__icon--cyan" aria-hidden="true"><i class="fas fa-droplet"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_water_name">2 литра воды</span></h3>
+                            <p class="template-card__category" data-translate="category_health">Здоровье</p>
+                            <p class="template-card__desc" data-translate="template_water_desc">Поддержка водного баланса и самочувствия каждый день.</p>
+                            <button type="button" class="template-card__start" data-template-start="water"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="pushups">
+                            <div class="template-card__icon template-card__icon--orange" aria-hidden="true"><i class="fas fa-dumbbell"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_pushups_name">Отжимания</span></h3>
+                            <p class="template-card__category" data-translate="category_sport">Спорт</p>
+                            <p class="template-card__desc" data-translate="template_pushups_desc">Сила верхней части тела за 30 дней последовательных тренировок.</p>
+                            <button type="button" class="template-card__start" data-template-start="pushups"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="meditation">
+                            <div class="template-card__icon template-card__icon--purple" aria-hidden="true"><i class="fas fa-spa"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_meditation_name">Медитация</span></h3>
+                            <p class="template-card__category" data-translate="category_mindfulness">Осознанность</p>
+                            <p class="template-card__desc" data-translate="template_meditation_desc">Короткие практики для спокойствия и концентрации.</p>
+                            <button type="button" class="template-card__start" data-template-start="meditation"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="english">
+                            <div class="template-card__icon template-card__icon--indigo" aria-hidden="true"><i class="fas fa-language"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_english_name">Английский язык</span></h3>
+                            <p class="template-card__category" data-translate="category_learning">Обучение</p>
+                            <p class="template-card__desc" data-translate="template_english_desc">Регулярные уроки или практика — язык лучше запоминается.</p>
+                            <button type="button" class="template-card__start" data-template-start="english"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="steps">
+                            <div class="template-card__icon template-card__icon--emerald" aria-hidden="true"><i class="fas fa-person-walking"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_steps_name">10 000 шагов</span></h3>
+                            <p class="template-card__category" data-translate="category_sport">Спорт</p>
+                            <p class="template-card__desc" data-translate="template_steps_desc">Больше движения в течение дня — привычка к активности.</p>
+                            <button type="button" class="template-card__start" data-template-start="steps"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="wakeup">
+                            <div class="template-card__icon template-card__icon--amber" aria-hidden="true"><i class="fas fa-sun"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_wakeup_name">Ранний подъем</span></h3>
+                            <p class="template-card__category" data-translate="category_productivity">Продуктивность</p>
+                            <p class="template-card__desc" data-translate="template_wakeup_desc">Стабильный режим сна и бодрое начало дня.</p>
+                            <button type="button" class="template-card__start" data-template-start="wakeup"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="nosmoke">
+                            <div class="template-card__icon template-card__icon--red" aria-hidden="true"><i class="fas fa-smoking-ban"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_nosmoke_name">Не курить</span></h3>
+                            <p class="template-card__category" data-translate="category_health">Здоровье</p>
+                            <p class="template-card__desc" data-translate="template_nosmoke_desc">30 дней без сигарет — шаг к свободному дыханию и здоровью.</p>
+                            <button type="button" class="template-card__start" data-template-start="nosmoke"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                        <article class="template-card" data-template="sleep">
+                            <div class="template-card__icon template-card__icon--rose" aria-hidden="true"><i class="fas fa-bed"></i></div>
+                            <h3 class="template-card__title"><span data-translate="template_sleep_name">Сон 7–8 часов</span></h3>
+                            <p class="template-card__category" data-translate="category_health">Здоровье</p>
+                            <p class="template-card__desc" data-translate="template_sleep_desc">Стабильный сон — основа восстановления и продуктивности.</p>
+                            <button type="button" class="template-card__start" data-template-start="sleep"><span data-translate="template_btn_start">Начать</span></button>
+                        </article>
+                    </div>
+                <div class="templates-actions">
+                    <button type="button" id="template-create-custom-btn" class="btn-outline-primary">
+                        <i class="fas fa-sliders-h mr-2" aria-hidden="true"></i>
+                        <span data-translate="template_create_custom">Создать свой</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Быстрые действия -->
     <section class="py-8 md:py-12 bg-white dark:bg-gray-800">
         <div class="container mx-auto px-4">
@@ -262,100 +361,105 @@
             <!-- Статистика -->
             <div id="statistics-container" class="hidden">
                 <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-4 md:mb-6 dark:text-white" data-translate="statistics_title">Статистика</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 dark:bg-blue-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 dark:bg-blue-900/30">
                                 <i class="fas fa-chart-bar text-blue-600 text-xl dark:text-blue-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_total_trackers">Всего трекеров</p>
-                                <p id="total-trackers" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_total_trackers">Всего трекеров</p>
+                                <p id="total-trackers" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 dark:bg-green-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 dark:bg-green-900/30">
                                 <i class="fas fa-check-circle text-green-600 text-xl dark:text-green-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_active_trackers">Активные трекеры</p>
-                                <p id="active-trackers" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_active_trackers">Активные трекеры</p>
+                                <p id="active-trackers" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 dark:bg-purple-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 dark:bg-purple-900/30">
                                 <i class="fas fa-chart-pie text-purple-600 text-xl dark:text-purple-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_average_progress">Средний прогресс</p>
-                                <p id="average-progress" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_average_progress">Средний прогресс</p>
+                                <p id="average-progress" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4 dark:bg-orange-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4 dark:bg-orange-900/30">
                                 <i class="fas fa-trophy text-yellow-500 text-xl dark:text-yellow-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completed_days">Завершено дней</p>
-                                <p id="completed-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completed_days">Завершено дней</p>
+                                <p id="completed-days" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
                                 <i class="fas fa-fire text-yellow-600 text-xl dark:text-yellow-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_streak_days">Дней подряд</p>
-                                <p id="streak-days" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_streak_days">Дней подряд</p>
+                                <p id="streak-days" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0</p>
+                                <p id="best-streak-days" class="stat-card__meta text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate" data-streak-record>—</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Процент завершения (общий) -->
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 dark:bg-indigo-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4 dark:bg-indigo-900/30">
                                 <i class="fas fa-percent text-indigo-600 text-xl dark:text-indigo-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completion_rate">Общий прогресс</p>
-                                <p id="completion-rate" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_completion_rate">Общий прогресс</p>
+                                <p id="completion-rate" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">0%</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Самый продуктивный день -->
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4 dark:bg-yellow-900/30">
                                 <i class="fas fa-star text-yellow-600 text-xl dark:text-yellow-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_best_day">Лучший день</p>
-                                <p id="best-day" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_best_day">Лучший день</p>
+                                <p id="best-day" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">—</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Любимая категория -->
                     <div class="stat-card bg-white rounded-xl shadow-md p-4 md:p-6 dark:bg-gray-800">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4 dark:bg-pink-900/30">
+                        <div class="stat-card__inner flex items-start">
+                            <div class="stat-card__icon w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-4 dark:bg-pink-900/30">
                                 <i class="fas fa-heart text-pink-600 text-xl dark:text-pink-400"></i>
                             </div>
-                            <div>
-                                <p class="text-gray-600 text-sm dark:text-gray-400" data-translate="stat_favorite_category">Любимая категория</p>
-                                <p id="favorite-category" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">—</p>
+                            <div class="stat-card__body min-w-0 flex-1">
+                                <p class="stat-card__label text-gray-600 text-sm dark:text-gray-400" data-translate="stat_favorite_category">Любимая категория</p>
+                                <p id="favorite-category" class="stat-card__value text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">—</p>
+                                <p class="stat-card__meta" aria-hidden="true">&nbsp;</p>
                             </div>
                         </div>
                     </div>
@@ -606,6 +710,22 @@
                     <input type="file" id="import-file-input" accept=".json,application/json" class="hidden">
                 
                 </nav>
+
+                <details class="notification-settings">
+                    <summary class="notification-settings__summary" data-translate="notif_settings_summary">Настройки уведомлений</summary>
+                    <div class="notification-settings__body">
+                        <p class="notification-settings__hint text-xs text-gray-500 mb-3 dark:text-gray-500" data-translate="notif_settings_hint">Напоминание только на этом устройстве, без сервера.</p>
+                        <div class="notification-settings__row">
+                            <label for="notification-time-input" class="text-xs text-gray-400 block mb-1" data-translate="notif_time_label">Время напоминания</label>
+                            <input type="time" id="notification-time-input" value="21:00" step="60"
+                                   class="w-full max-w-[12rem] px-2 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:border-gray-600">
+                        </div>
+                        <button type="button" id="notification-permission-btn"
+                                class="mt-3 w-full max-w-[12rem] py-2 px-3 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                            <span data-translate="notif_request_permission">Запросить разрешение</span>
+                        </button>
+                    </div>
+                </details>
                 
                 <div class="text-center">
                     <p class="text-xs md:text-sm text-gray-500 mb-2 dark:text-gray-600" data-translate="footer_copyright">
@@ -919,46 +1039,98 @@
         </div>
     </div>
 
-    <!-- Модалка ссылки на трекер -->
-    <div id="share-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto">
+    <!-- Модалка: ссылка + карточка прогресса -->
+    <div id="share-tracker-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 overflow-y-auto" data-share-tracker-id="">
         <div class="min-h-screen flex items-center justify-center p-3 sm:p-4">
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full modal-responsive dark:bg-gray-800">
+            <div class="share-modal-dialog bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full modal-responsive dark:bg-gray-800">
                 <div class="flex justify-between items-center border-b border-gray-200 p-4 sm:p-6 dark:border-gray-700">
                     <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white" data-translate="modal_share_title">Поделиться трекером</h2>
-                    <button onclick="closeModal('share-tracker-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
+                    <button type="button" onclick="closeModal('share-tracker-modal')" class="text-gray-400 hover:text-red-600 text-xl sm:text-2xl dark:text-gray-400 dark:hover:text-red-600">
                         <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="share-modal-tabs flex border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label="Share">
+                    <button type="button" role="tab" id="share-tab-link" class="share-modal-tab share-modal-tab--active flex-1 py-3 px-2 sm:px-4 text-sm sm:text-base font-semibold transition-colors" aria-selected="true" data-share-tab="link">
+                        <span data-translate="modal_share_tab_link">Ссылка</span>
+                    </button>
+                    <button type="button" role="tab" id="share-tab-card" class="share-modal-tab flex-1 py-3 px-2 sm:px-4 text-sm sm:text-base font-semibold transition-colors" aria-selected="false" data-share-tab="card">
+                        <span data-translate="modal_share_tab_card">Карточка прогресса</span>
                     </button>
                 </div>
                 
                 <div class="p-4 sm:p-6 md:p-8">
-                    <div class="text-center mb-6">
-                        <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900/30">
-                            <i class="fas fa-link text-blue-600 text-3xl dark:text-blue-400"></i>
+                    <div id="share-panel-link" class="share-modal-panel" role="tabpanel" aria-labelledby="share-tab-link">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center dark:bg-blue-900/30">
+                                <i class="fas fa-link text-blue-600 text-3xl dark:text-blue-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_share_subtitle">Ссылка на трекер</h3>
+                            <p class="text-gray-600 mb-4 dark:text-gray-400" data-translate="modal_share_description">Сохраните эту ссылку, чтобы всегда иметь доступ к своему трекеру:</p>
+                            
+                            <div class="bg-gray-50 p-4 rounded-lg mb-4 dark:bg-gray-700">
+                                <p id="tracker-share-url" class="text-blue-600 font-mono text-sm break-all dark:text-blue-400"></p>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
+                                <button type="button" onclick="copyShareUrl()" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center">
+                                    <i class="fas fa-copy mr-2"></i>
+                                    <span data-translate="modal_share_copy">Копировать</span>
+                                </button>
+                                <a id="open-tracker-link" href="#" target="_blank"
+                                   class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center no-underline">
+                                    <i class="fas fa-external-link-alt mr-2"></i>
+                                    <span data-translate="modal_share_open">Открыть</span>
+                                </a>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2 dark:text-white" data-translate="modal_share_subtitle">Ссылка на трекер</h3>
-                        <p class="text-gray-600 mb-4 dark:text-gray-400" data-translate="modal_share_description">Сохраните эту ссылку, чтобы всегда иметь доступ к своему трекеру:</p>
-                        
-                        <div class="bg-gray-50 p-4 rounded-lg mb-4 dark:bg-gray-700">
-                            <p id="tracker-share-url" class="text-blue-600 font-mono text-sm break-all dark:text-blue-400"></p>
+                    </div>
+
+                    <div id="share-panel-card" class="share-modal-panel hidden" role="tabpanel" aria-labelledby="share-tab-card" hidden>
+                        <p class="text-gray-600 text-sm sm:text-base mb-4 text-center dark:text-gray-400" data-translate="modal_share_card_intro">Сгенерируйте изображение с сеткой 30 дней и поделитесь прогрессом.</p>
+
+                        <div id="share-card-result-wrap" class="share-card-result-wrap hidden mb-4">
+                            <img id="share-card-result-img" class="share-card-result-img" alt="" />
                         </div>
-                        
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="copyShareUrl()" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center">
-                                <i class="fas fa-copy mr-2"></i>
-                                <span data-translate="modal_share_copy">Копировать</span>
+
+                        <div id="share-card-generate-row" class="flex flex-col sm:flex-row gap-2 justify-center mb-4">
+                            <button type="button" id="share-card-generate-btn" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-4 rounded-lg text-sm transition-all flex items-center justify-center">
+                                <i class="fas fa-image mr-2"></i>
+                                <span data-translate="modal_share_card_generate">Сгенерировать и поделиться</span>
                             </button>
-                            <a id="open-tracker-link" href="#" target="_blank"
-                               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center no-underline">
-                                <i class="fas fa-external-link-alt mr-2"></i>
-                                <span data-translate="modal_share_open">Открыть</span>
-                            </a>
                         </div>
+
+                        <div id="share-card-result-actions" class="hidden flex flex-col sm:flex-row gap-2 justify-center mb-3">
+                            <button type="button" id="share-card-download-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center">
+                                <i class="fas fa-download mr-2"></i>
+                                <span data-translate="modal_share_card_download_png">Скачать PNG</span>
+                            </button>
+                            <button type="button" id="share-card-copy-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center">
+                                <i class="fas fa-paste mr-2"></i>
+                                <span data-translate="modal_share_card_copy_clipboard">Копировать в буфер</span>
+                            </button>
+                            <button type="button" id="share-card-regenerate-btn" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                <span data-translate="modal_share_card_regenerate">Сгенерировать заново</span>
+                            </button>
+                        </div>
+
+                        <p id="share-card-error" class="hidden text-center text-sm text-red-600 dark:text-red-400 mb-2" role="alert"></p>
+                        <div class="text-center">
+                            <button type="button" id="share-card-retry-btn" class="hidden text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline">
+                                <span data-translate="modal_share_card_retry">Попробовать ещё раз</span>
+                            </button>
+                        </div>
+                        <p id="share-card-generating-hint" class="hidden text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            <i class="fas fa-spinner fa-spin mr-1"></i>
+                            <span data-translate="modal_share_card_generating">Генерация…</span>
+                        </p>
                     </div>
                 </div>
                 
                 <div class="bg-gray-50 rounded-b-xl sm:rounded-b-2xl p-4 sm:p-6 dark:bg-gray-700">
-                    <button onclick="closeModal('share-tracker-modal')" 
+                    <button type="button" onclick="closeModal('share-tracker-modal')" 
                             class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg text-sm md:text-base hover:from-blue-700 hover:to-cyan-700 transition-all"
                             data-translate="modal_close">
                         Закрыть
@@ -966,6 +1138,36 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Онбординг -->
+    <div id="onboarding-overlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+        <div class="onboarding-overlay__backdrop"></div>
+        <div class="onboarding-card">
+            <button type="button" id="onboarding-skip-btn" class="onboarding-card__skip" data-translate="onboarding_skip">Пропустить</button>
+            <div class="onboarding-card__icon" id="onboarding-icon" aria-hidden="true"><i class="fas fa-rocket"></i></div>
+            <h2 id="onboarding-title" class="onboarding-card__title"></h2>
+            <p id="onboarding-text" class="onboarding-card__text"></p>
+            <div class="onboarding-card__dots" id="onboarding-dots" aria-hidden="true"></div>
+            <button type="button" id="onboarding-next-btn" class="onboarding-card__next"></button>
+        </div>
+    </div>
+
+    <!-- Поздравление: день 30 -->
+    <div id="milestone-celebration" class="milestone-celebration hidden" role="dialog" aria-modal="true">
+        <div class="milestone-celebration__confetti" aria-hidden="true"></div>
+        <div class="milestone-celebration__card">
+            <p class="milestone-celebration__emoji" aria-hidden="true">🎉</p>
+            <h2 class="milestone-celebration__title" data-translate="milestone_day_30_title">30 дней!</h2>
+            <p class="milestone-celebration__text" data-translate="milestone_day_30">Ты прошёл весь путь. Не останавливайся — закрепи привычку и начни новый челлендж.</p>
+            <button type="button" id="milestone-celebration-close" class="milestone-celebration__btn" data-translate="milestone_continue">Продолжить</button>
+        </div>
+    </div>
+
+    <!-- Тост вехи (дни 1, 7, 14, 21) -->
+    <div id="milestone-toast" class="milestone-toast hidden" role="status" aria-live="polite">
+        <span class="milestone-toast__icon" aria-hidden="true"><i class="fas fa-star"></i></span>
+        <p id="milestone-toast-text" class="milestone-toast__text"></p>
     </div>
 
     <!-- Уведомление -->

@@ -23,6 +23,138 @@ const CONFIG = {
     maxTrackers: 50
 };
 
+/** Пресеты для секции «Быстрые шаблоны» (название и цель — через I18n) */
+const TRACKER_TEMPLATE_DEFS = {
+    sugar: { category: 'health', color: 'green' },
+    read: { category: 'learning', color: 'blue' },
+    water: { category: 'health', color: 'cyan' },
+    pushups: { category: 'sport', color: 'orange' },
+    meditation: { category: 'mindfulness', color: 'purple' },
+    english: { category: 'learning', color: 'indigo' },
+    steps: { category: 'sport', color: 'emerald' },
+    wakeup: { category: 'productivity', color: 'amber' },
+    nosmoke: { category: 'health', color: 'red' },
+    sleep: { category: 'health', color: 'rose' }
+};
+
+function getShareProgressCardDayX(tracker) {
+    const raw = tracker.checkedDays || [];
+    const days = [...new Set(raw.map(Number).filter(d => Number.isInteger(d) && d >= 1 && d <= 30))].sort((a, b) => a - b);
+    if (days.length === 0) return 1;
+    let streak = 0;
+    for (let d = 1; d <= 30; d++) {
+        if (days.includes(d)) streak++;
+        else break;
+    }
+    if (streak > 0) return streak;
+    return Math.max(...days);
+}
+
+function getShareCardSiteLabel() {
+    try {
+        const { protocol, host, hostname } = window.location;
+        if (protocol === 'file:' || !hostname) return '30daytrack.vercel.app';
+        if (host) return host;
+    } catch (e) { /* ignore */ }
+    return '30daytrack.vercel.app';
+}
+
+function buildShareProgressCardElement(tracker) {
+    const color = CONFIG.colorMap[tracker.color] || CONFIG.colorMap.blue;
+    const checked = new Set((tracker.checkedDays || []).map(d => Number(d)).filter(d => Number.isInteger(d) && d >= 1 && d <= 30));
+    const dayX = getShareProgressCardDayX(tracker);
+    const line = I18n.t('share_card_day_line', 'День {x} из 30').replace('{x}', String(dayX));
+    const name = Utils.sanitizeText(tracker.name || '', 100);
+    const site = getShareCardSiteLabel();
+
+    const root = document.createElement('div');
+    root.setAttribute('data-share-card-export', '1');
+    root.style.boxSizing = 'border-box';
+    root.style.width = '420px';
+    root.style.padding = '28px 24px 28px';
+    root.style.background = '#ffffff';
+    root.style.borderRadius = '18px';
+    root.style.fontFamily = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
+    root.style.color = '#111827';
+    root.style.overflow = 'visible';
+
+    const head = document.createElement('div');
+    head.textContent = line;
+    head.style.textAlign = 'center';
+    head.style.fontSize = '22px';
+    head.style.fontWeight = '700';
+    head.style.marginBottom = '18px';
+    head.style.letterSpacing = '-0.02em';
+    head.style.lineHeight = '1.25';
+    root.appendChild(head);
+
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
+    grid.style.gap = '7px';
+    grid.style.marginBottom = '20px';
+
+    const checkSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="#ffffff" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+
+    for (let day = 1; day <= 30; day++) {
+        const isOn = checked.has(day);
+        const cell = document.createElement('div');
+        cell.style.height = '44px';
+        cell.style.borderRadius = '9px';
+        cell.style.boxSizing = 'border-box';
+        cell.style.display = 'flex';
+        cell.style.alignItems = 'center';
+        cell.style.justifyContent = 'center';
+        cell.style.backgroundColor = '#ffffff';
+        cell.style.border = '2px solid #e5e7eb';
+
+        const box = document.createElement('div');
+        box.style.width = '26px';
+        box.style.height = '26px';
+        box.style.borderRadius = '7px';
+        box.style.border = `2px solid ${isOn ? color.hex : '#d1d5db'}`;
+        box.style.backgroundColor = isOn ? color.hex : 'transparent';
+        box.style.display = 'flex';
+        box.style.alignItems = 'center';
+        box.style.justifyContent = 'center';
+        box.style.flexShrink = '0';
+        if (isOn) box.innerHTML = checkSvg;
+
+        cell.appendChild(box);
+        grid.appendChild(cell);
+    }
+    root.appendChild(grid);
+
+    const title = document.createElement('div');
+    title.setAttribute('data-share-card-title', '1');
+    title.textContent = name;
+    title.style.textAlign = 'center';
+    title.style.fontSize = '17px';
+    title.style.fontWeight = '600';
+    title.style.color = '#1f2937';
+    title.style.lineHeight = '1.45';
+    title.style.paddingTop = '6px';
+    title.style.paddingBottom = '4px';
+    title.style.marginTop = '4px';
+    title.style.wordBreak = 'break-word';
+    title.style.overflowWrap = 'anywhere';
+    title.style.whiteSpace = 'normal';
+    title.style.minHeight = '2.9em';
+    title.style.overflow = 'visible';
+    root.appendChild(title);
+
+    const foot = document.createElement('div');
+    foot.textContent = site;
+    foot.style.textAlign = 'center';
+    foot.style.fontSize = '12px';
+    foot.style.color = '#6b7280';
+    foot.style.marginTop = '16px';
+    foot.style.lineHeight = '1.35';
+    root.appendChild(foot);
+
+    return root;
+}
+
 const ThemeManager = {
     currentTheme: 'light',
     
@@ -84,8 +216,9 @@ const ThemeManager = {
     },
     
     updateThemeIcons(theme) {
-        const moonIcons = document.querySelectorAll('.fa-moon');
-        const sunIcons = document.querySelectorAll('.fa-sun');
+        // Ищем иконки ТОЛЬКО в кнопках переключения темы
+        const moonIcons = document.querySelectorAll('#theme-toggle .fa-moon, #mobile-theme-toggle .fa-moon');
+        const sunIcons = document.querySelectorAll('#theme-toggle .fa-sun, #mobile-theme-toggle .fa-sun');
         
         if (theme === 'dark') {
             moonIcons.forEach(icon => icon.classList.add('hidden'));
@@ -806,6 +939,13 @@ const TrackerStorage = {
             color: CONFIG.colorMap[rawTracker.color] ? rawTracker.color : 'blue',
             checkedDays: safeCheckedDays,
             progress: Math.round((safeCheckedDays.length / 30) * 100),
+            milestonesShown: Array.isArray(rawTracker.milestonesShown)
+                ? [...new Set(
+                    rawTracker.milestonesShown
+                        .map(n => Number(n))
+                        .filter(n => Number.isInteger(n) && [1, 7, 14, 21, 30].includes(n))
+                )]
+                : [],
             createdAt: safeCreatedAt,
             updatedAt: safeUpdatedAt
         };
@@ -890,6 +1030,35 @@ const TrackerStorage = {
         }
         
         return streak;
+    },
+
+    /**
+     * Максимальная длина непрерывной цепочки отмеченных дней челленджа (1–30) для одного трекера.
+     */
+    longestRunChallengeStreak(checkedDays) {
+        const sorted = [...new Set((checkedDays || []).map(Number).filter(d => Number.isInteger(d) && d >= 1 && d <= 30))].sort((a, b) => a - b);
+        if (!sorted.length) return 0;
+        let best = 1;
+        let run = 1;
+        for (let i = 1; i < sorted.length; i++) {
+            if (sorted[i] === sorted[i - 1] + 1) {
+                run++;
+                best = Math.max(best, run);
+            } else if (sorted[i] !== sorted[i - 1]) {
+                run = 1;
+            }
+        }
+        return best;
+    },
+
+    /** Глобальный рекорд: максимум по всем трекерам */
+    getBestStreak() {
+        const trackers = this.getTrackers();
+        let max = 0;
+        trackers.forEach(t => {
+            max = Math.max(max, this.longestRunChallengeStreak(t.checkedDays));
+        });
+        return max;
     },
     
     saveTracker(tracker) {
@@ -1213,59 +1382,9 @@ const TrackerGenerator = {
         
         preview.querySelectorAll('.day-cell[data-tracker-id="' + trackerId + '"]').forEach(cell => {
             cell.addEventListener('click', function() {
-                const day = parseInt(this.getAttribute('data-day'));
-                const checkBox = this.querySelector('.check-box');
-                const icon = checkBox.querySelector('.fa-check');
-                
-                const trackerDataStr = preview.dataset.trackerData;
-                if (!trackerDataStr) return;
-                
-                const trackerData = JSON.parse(trackerDataStr);
-                const checkedDays = trackerData.checkedDays || [];
-                
-                if (checkedDays.includes(day)) {
-                    const index = checkedDays.indexOf(day);
-                    checkedDays.splice(index, 1);
-                    checkBox.style.backgroundColor = 'transparent';
-                    checkBox.style.borderColor = '#d1d5db';
-                    if (icon) icon.style.display = 'none';
-                    this.style.borderColor = '#e5e7eb';
-                } else {
-                    checkedDays.push(day);
-                    checkedDays.sort((a, b) => a - b);
-                    checkBox.style.backgroundColor = color.hex;
-                    checkBox.style.borderColor = color.hex;
-                    if (icon) icon.style.display = 'block';
-                    this.style.borderColor = color.hex;
-                }
-                
-                trackerData.checkedDays = checkedDays;
-                trackerData.progress = Math.round((checkedDays.length / 30) * 100);
-                preview.dataset.trackerData = JSON.stringify(trackerData);
-                
-                const progressFill = preview.querySelector('.progress-fill');
-                const progressText = preview.querySelectorAll('.text-xs.text-gray-500 span');
-                
-                if (progressFill) progressFill.style.width = trackerData.progress + '%';
-                if (progressText.length >= 2) {
-                    progressText[0].textContent = `${checkedDays.length} ${I18n.t('of')} 30 ${I18n.t('days')}`;
-                    progressText[1].textContent = `${trackerData.progress}%`;
-                }
-
-                const headerProgress = preview.querySelector('.trecker-header .text-gray-500 .font-bold');
-                if (headerProgress) {
-                    headerProgress.textContent = `${trackerData.progress}%`;
-                }
-
-                const updatedDateElement = preview.querySelector('.footer .flex.justify-between p:nth-child(2)');
-                if (updatedDateElement) {
-                    updatedDateElement.textContent = `${I18n.t('updated')}: ${Utils.formatDate(new Date().toISOString())}`;
-                }
-                
-                TrackerStorage.updateTrackerDays(trackerId, checkedDays);
-                App.loadTrackers();
-                App.updateStatistics();
-                
+                const day = parseInt(this.getAttribute('data-day'), 10);
+                if (!Number.isInteger(day)) return;
+                App.markDay(trackerId, day, this, color);
             });
         });
     },
@@ -1337,10 +1456,214 @@ const TrackerGenerator = {
     }
 };
 
+const MILESTONE_COUNTS = [1, 7, 14, 21, 30];
+const LS_ONBOARDING_SHOWN = 'onboarding_shown';
+
+const Onboarding = {
+    step: 0,
+    steps: [
+        { icon: 'fa-rocket', titleKey: 'onboarding_step1_title', textKey: 'onboarding_step1_text' },
+        { icon: 'fa-layer-group', titleKey: 'onboarding_step2_title', textKey: 'onboarding_step2_text' },
+        { icon: 'fa-calendar-check', titleKey: 'onboarding_step3_title', textKey: 'onboarding_step3_text' },
+        { icon: 'fa-flag-checkered', titleKey: 'onboarding_step4_title', textKey: 'onboarding_step4_text' }
+    ],
+
+    init() {
+        if (localStorage.getItem(LS_ONBOARDING_SHOWN) === 'true') return;
+        this.bind();
+        requestAnimationFrame(() => this.show());
+    },
+
+    bind() {
+        document.getElementById('onboarding-skip-btn')?.addEventListener('click', () => this.finish());
+        document.getElementById('onboarding-next-btn')?.addEventListener('click', () => this.next());
+    },
+
+    show() {
+        document.getElementById('onboarding-overlay')?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        this.render();
+    },
+
+    render() {
+        const data = this.steps[this.step];
+        const iconWrap = document.getElementById('onboarding-icon');
+        const titleEl = document.getElementById('onboarding-title');
+        const textEl = document.getElementById('onboarding-text');
+        const dotsEl = document.getElementById('onboarding-dots');
+        const nextBtn = document.getElementById('onboarding-next-btn');
+
+        if (iconWrap) iconWrap.innerHTML = `<i class="fas ${data.icon}"></i>`;
+        if (titleEl) titleEl.textContent = I18n.t(data.titleKey);
+        if (textEl) textEl.textContent = I18n.t(data.textKey);
+        if (nextBtn) {
+            nextBtn.textContent = this.step === this.steps.length - 1
+                ? I18n.t('onboarding_finish')
+                : I18n.t('onboarding_next');
+        }
+        if (dotsEl) {
+            dotsEl.innerHTML = this.steps.map((_, i) =>
+                `<span class="onboarding-card__dot${i === this.step ? ' onboarding-card__dot--active' : ''}"></span>`
+            ).join('');
+        }
+    },
+
+    next() {
+        if (this.step < this.steps.length - 1) {
+            this.step += 1;
+            this.render();
+        } else {
+            this.finish();
+        }
+    },
+
+    finish() {
+        localStorage.setItem(LS_ONBOARDING_SHOWN, 'true');
+        document.getElementById('onboarding-overlay')?.classList.add('hidden');
+        document.body.style.overflow = '';
+        const section = document.querySelector('.templates-section');
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
+
+const LS_NOTIF_TIME = 'notification_time';
+const LS_NOTIF_LAST_FIRED = 'notification_last_fired_date';
+const LS_NOTIF_FOCUS = 'notification_focus_tracker_id';
+
+const ReminderScheduler = {
+    timeoutId: null,
+    tickId: null,
+
+    notificationIconHref() {
+        try {
+            return new URL('images/icon-192.png', window.location.href).href;
+        } catch (e) {
+            return undefined;
+        }
+    },
+
+    init() {
+        this.bindUI();
+        this.scheduleNextDailyTimeout();
+        if (this.tickId) clearInterval(this.tickId);
+        this.tickId = setInterval(() => this.maybeFireWithinMinute(), 30000);
+    },
+
+    getTimeInput() {
+        return document.getElementById('notification-time-input');
+    },
+
+    bindUI() {
+        const inp = this.getTimeInput();
+        if (!inp) return;
+        const saved = localStorage.getItem(LS_NOTIF_TIME);
+        inp.value = saved && /^\d{2}:\d{2}$/.test(saved) ? saved : '21:00';
+        if (!localStorage.getItem(LS_NOTIF_TIME)) {
+            localStorage.setItem(LS_NOTIF_TIME, inp.value);
+        }
+        inp.addEventListener('change', () => {
+            localStorage.setItem(LS_NOTIF_TIME, inp.value);
+            this.scheduleNextDailyTimeout();
+        });
+        document.getElementById('notification-permission-btn')?.addEventListener('click', () => this.requestPermission());
+    },
+
+    async requestPermission() {
+        if (!('Notification' in window)) {
+            Utils.showNotification(I18n.t('notif_unsupported'), 'error');
+            return;
+        }
+        const r = await Notification.requestPermission();
+        if (r === 'granted') {
+            Utils.showNotification(I18n.t('notif_granted'));
+            this.scheduleNextDailyTimeout();
+        } else {
+            Utils.showNotification(I18n.t('notif_denied'), 'warning');
+        }
+    },
+
+    scheduleNextDailyTimeout() {
+        if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
+            this.timeoutId = null;
+        }
+        if (!('Notification' in window)) return;
+        const inp = this.getTimeInput();
+        const timeStr = (inp?.value || localStorage.getItem(LS_NOTIF_TIME) || '21:00').slice(0, 5);
+        const parts = timeStr.split(':');
+        const hh = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10) || 0;
+        const now = new Date();
+        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Number.isFinite(hh) ? hh : 21, Number.isFinite(mm) ? mm : 0, 0, 0);
+        if (target.getTime() <= now.getTime()) {
+            target.setDate(target.getDate() + 1);
+        }
+        const ms = target.getTime() - now.getTime();
+        this.timeoutId = setTimeout(() => {
+            this.maybeFireTodayReminder();
+            this.scheduleNextDailyTimeout();
+        }, Math.max(ms, 1000));
+    },
+
+    maybeFireWithinMinute() {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const inp = this.getTimeInput();
+        const timeStr = (inp?.value || localStorage.getItem(LS_NOTIF_TIME) || '21:00').slice(0, 5);
+        const [hStr, mStr] = timeStr.split(':');
+        const hh = parseInt(hStr, 10);
+        const mm = parseInt(mStr, 10) || 0;
+        const now = new Date();
+        if (now.getHours() === hh && now.getMinutes() === mm) {
+            this.maybeFireTodayReminder();
+        }
+    },
+
+    maybeFireTodayReminder() {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        const today = new Date().toDateString();
+        if (localStorage.getItem(LS_NOTIF_LAST_FIRED) === today) return;
+
+        const trackers = TrackerStorage.getTrackers();
+        if (!trackers.length) return;
+
+        let tracker = null;
+        const focusId = localStorage.getItem(LS_NOTIF_FOCUS);
+        if (focusId) tracker = TrackerStorage.getTracker(focusId);
+        if (!tracker) tracker = trackers[0];
+
+        const dayX = getShareProgressCardDayX(tracker);
+        const body = I18n.t('notif_reminder_body')
+            .replace('{x}', String(dayX))
+            .replace('{name}', tracker.name);
+        const title = I18n.t('notif_reminder_title');
+
+        const icon = this.notificationIconHref();
+        try {
+            const n = new Notification(title, {
+                body,
+                ...(icon ? { icon, badge: icon } : {}),
+                tag: '30day-local-reminder'
+            });
+            n.onclick = () => {
+                window.focus();
+                const base = `${window.location.pathname}${window.location.search}`;
+                window.location.href = `${base}#tracker-${tracker.id}`;
+                n.close();
+            };
+        } catch (e) {
+            return;
+        }
+        localStorage.setItem(LS_NOTIF_LAST_FIRED, today);
+    }
+};
+
 const App = {
     currentTrackerId: null,
     trackerToDelete: null,
     editingTrackerId: null,
+    shareProgressCanvas: null,
+    _recordToastTimer: null,
+    _milestoneToastTimer: null,
     
     init() {
         I18n.init();
@@ -1355,6 +1678,10 @@ const App = {
         this.checkUrlHash();
         this.initModals();
         this.initScrollToTopButton();
+        this.initTemplatesSection();
+        this.initShareModal();
+        ReminderScheduler.init();
+        Onboarding.init();
 
         // Инициализация менеджера данных
         if (typeof DataManager !== 'undefined') {
@@ -1366,6 +1693,70 @@ const App = {
         }
     },
     
+    initTemplatesSection() {
+        const section = document.querySelector('.templates-section');
+        if (!section) return;
+
+        section.addEventListener('click', (e) => {
+            const startBtn = e.target.closest('[data-template-start]');
+            if (startBtn) {
+                const templateId = startBtn.getAttribute('data-template-start');
+                if (templateId) this.createTrackerFromTemplate(templateId);
+                return;
+            }
+        });
+
+        const customBtn = document.getElementById('template-create-custom-btn');
+        if (customBtn) {
+            customBtn.addEventListener('click', () => {
+                const formSection = document.getElementById('form-heading');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+    },
+
+    createTrackerFromTemplate(templateId) {
+        const def = TRACKER_TEMPLATE_DEFS[templateId];
+        if (!def) return;
+
+        const nameKey = `template_${templateId}_name`;
+        const goalKey = `template_${templateId}_goal`;
+        const name = I18n.t(nameKey);
+        const goal = I18n.t(goalKey);
+
+        if (!name || !goal || name === nameKey || goal === goalKey) {
+            Utils.showNotification(I18n.t('error_fill_fields'), 'error');
+            return;
+        }
+
+        if (this.editingTrackerId) {
+            this.resetFormToCreateMode();
+        }
+
+        const now = new Date().toISOString();
+        const tracker = {
+            id: Utils.generateId(),
+            name,
+            category: def.category,
+            goal,
+            note: '',
+            color: def.color,
+            checkedDays: [],
+            progress: 0,
+            createdAt: now,
+            updatedAt: now
+        };
+
+        const saved = TrackerStorage.saveTracker(tracker);
+        if (!saved) return;
+
+        this.loadTrackers();
+        Utils.showNotification(I18n.t('notification_tracker_created'));
+        this.openTracker(tracker.id);
+    },
+
     initMobileMenu() {
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -1691,6 +2082,9 @@ const App = {
         
         if (saved) {
             TrackerGenerator.renderPreview(newTracker);
+            try {
+                localStorage.setItem(LS_NOTIF_FOCUS, newTracker.id);
+            } catch (e) { /* ignore */ }
             this.loadTrackers();
             
             setTimeout(() => {
@@ -1937,6 +2331,12 @@ const App = {
         if (completedDaysEl) completedDaysEl.textContent = completedDays;
         if (averageProgressEl) averageProgressEl.textContent = averageProgress + '%';
         if (streakEl) streakEl.textContent = streak;
+
+        const bestStreak = TrackerStorage.getBestStreak();
+        const bestStreakEl = document.getElementById('best-streak-days');
+        if (bestStreakEl) {
+            bestStreakEl.textContent = I18n.t('stat_best_streak').replace('{x}', String(bestStreak));
+        }
         
         // Обновляем новые элементы
         const completionRateEl = document.getElementById('completion-rate');
@@ -2002,6 +2402,9 @@ const App = {
         if (preview) preview.scrollIntoView({ behavior: 'smooth' });
         
         this.setActiveTracker(trackerId);
+        try {
+            localStorage.setItem(LS_NOTIF_FOCUS, trackerId);
+        } catch (e) { /* ignore */ }
     },
     
     setActiveTracker(trackerId) {
@@ -2087,8 +2490,372 @@ const App = {
         
         if (shareUrlEl) shareUrlEl.textContent = url;
         if (openLinkEl) openLinkEl.href = url;
-        
+
+        const modal = document.getElementById('share-tracker-modal');
+        if (modal) modal.setAttribute('data-share-tracker-id', trackerId);
+
+        this.setShareModalTab('link');
+        this.resetShareCardPanel();
         openModal('share-tracker-modal');
+    },
+
+    initShareModal() {
+        const tabLink = document.getElementById('share-tab-link');
+        const tabCard = document.getElementById('share-tab-card');
+        tabLink?.addEventListener('click', () => this.setShareModalTab('link'));
+        tabCard?.addEventListener('click', () => this.setShareModalTab('card'));
+
+        document.getElementById('share-card-generate-btn')?.addEventListener('click', () => this.generateShareProgressCard());
+        document.getElementById('share-card-download-btn')?.addEventListener('click', () => this.downloadShareProgressPng());
+        document.getElementById('share-card-copy-btn')?.addEventListener('click', () => this.copyShareProgressPng());
+        document.getElementById('share-card-retry-btn')?.addEventListener('click', () => {
+            this.hideShareCardError();
+            this.generateShareProgressCard();
+        });
+        document.getElementById('share-card-regenerate-btn')?.addEventListener('click', () => {
+            this.hideShareCardError();
+            this.generateShareProgressCard();
+        });
+    },
+
+    setShareModalTab(tab) {
+        const panelLink = document.getElementById('share-panel-link');
+        const panelCard = document.getElementById('share-panel-card');
+        const btnLink = document.getElementById('share-tab-link');
+        const btnCard = document.getElementById('share-tab-card');
+        if (!panelLink || !panelCard || !btnLink || !btnCard) return;
+
+        const isLink = tab === 'link';
+        panelLink.classList.toggle('hidden', !isLink);
+        panelLink.toggleAttribute('hidden', !isLink);
+        panelCard.classList.toggle('hidden', isLink);
+        panelCard.toggleAttribute('hidden', isLink);
+
+        btnLink.classList.toggle('share-modal-tab--active', isLink);
+        btnCard.classList.toggle('share-modal-tab--active', !isLink);
+        btnLink.setAttribute('aria-selected', isLink ? 'true' : 'false');
+        btnCard.setAttribute('aria-selected', !isLink ? 'true' : 'false');
+
+        if (!isLink && this.shareProgressCanvas) {
+            document.getElementById('share-card-result-wrap')?.classList.remove('hidden');
+            document.getElementById('share-card-result-actions')?.classList.remove('hidden');
+            document.getElementById('share-card-generate-row')?.classList.add('hidden');
+        }
+    },
+
+    getShareModalTracker() {
+        const modal = document.getElementById('share-tracker-modal');
+        const id = modal?.getAttribute('data-share-tracker-id');
+        return id ? TrackerStorage.getTracker(id) : null;
+    },
+
+    resetShareCardPanel() {
+        this.shareProgressCanvas = null;
+        const resultWrap = document.getElementById('share-card-result-wrap');
+        const resultImg = document.getElementById('share-card-result-img');
+        const actions = document.getElementById('share-card-result-actions');
+        const genRow = document.getElementById('share-card-generate-row');
+        const genBtn = document.getElementById('share-card-generate-btn');
+        const genLabel = genBtn?.querySelector('[data-translate]');
+
+        if (resultImg) {
+            resultImg.removeAttribute('src');
+            resultImg.alt = '';
+        }
+        resultWrap?.classList.add('hidden');
+        actions?.classList.add('hidden');
+        genRow?.classList.remove('hidden');
+        this.hideShareCardError();
+        document.getElementById('share-card-generating-hint')?.classList.add('hidden');
+        if (genBtn) genBtn.disabled = false;
+        if (genLabel) {
+            genLabel.setAttribute('data-translate', 'modal_share_card_generate');
+            genLabel.textContent = I18n.t('modal_share_card_generate');
+        }
+    },
+
+    hideShareCardError() {
+        const err = document.getElementById('share-card-error');
+        const retry = document.getElementById('share-card-retry-btn');
+        err?.classList.add('hidden');
+        err && (err.textContent = '');
+        retry?.classList.add('hidden');
+    },
+
+    showShareCardError() {
+        const err = document.getElementById('share-card-error');
+        const retry = document.getElementById('share-card-retry-btn');
+        if (err) {
+            err.textContent = I18n.t('error_share_card_generation');
+            err.classList.remove('hidden');
+        }
+        retry?.classList.remove('hidden');
+    },
+
+    async generateShareProgressCard() {
+        const tracker = this.getShareModalTracker();
+        if (!tracker) {
+            Utils.showNotification(I18n.t('error_tracker_not_found'), 'error');
+            return;
+        }
+
+        const genBtn = document.getElementById('share-card-generate-btn');
+        const genHint = document.getElementById('share-card-generating-hint');
+        const genLabel = genBtn?.querySelector('[data-translate]');
+
+        this.hideShareCardError();
+        if (genBtn) genBtn.disabled = true;
+        genHint?.classList.remove('hidden');
+
+        const exportEl = buildShareProgressCardElement(tracker);
+        exportEl.style.position = 'fixed';
+        exportEl.style.left = '-12000px';
+        exportEl.style.top = '0';
+        document.body.appendChild(exportEl);
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const capHeight = Math.ceil(exportEl.scrollHeight) + 8;
+
+        try {
+            if (typeof html2canvas !== 'function') {
+                throw new Error('html2canvas missing');
+            }
+            const canvas = await html2canvas(exportEl, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                logging: false,
+                useCORS: true,
+                width: 420,
+                height: capHeight,
+                windowWidth: 420,
+                windowHeight: capHeight,
+                onclone(clonedDoc, clonedEl) {
+                    clonedEl.style.overflow = 'visible';
+                    const t = clonedEl.querySelector('[data-share-card-title]');
+                    if (t) {
+                        t.style.maxHeight = 'none';
+                        t.style.overflow = 'visible';
+                    }
+                }
+            });
+            this.shareProgressCanvas = canvas;
+            const dataUrl = canvas.toDataURL('image/png');
+            const img = document.getElementById('share-card-result-img');
+            if (img) {
+                img.src = dataUrl;
+                img.alt = Utils.sanitizeText(tracker.name || '30-day', 100);
+            }
+            document.getElementById('share-card-result-wrap')?.classList.remove('hidden');
+            document.getElementById('share-card-result-actions')?.classList.remove('hidden');
+            document.getElementById('share-card-generate-row')?.classList.add('hidden');
+        } catch (e) {
+            this.showShareCardError();
+        } finally {
+            document.body.removeChild(exportEl);
+            genHint?.classList.add('hidden');
+            if (genBtn) genBtn.disabled = false;
+        }
+    },
+
+    downloadShareProgressPng() {
+        const canvas = this.shareProgressCanvas;
+        const tracker = this.getShareModalTracker();
+        if (!canvas || !tracker) {
+            Utils.showNotification(I18n.t('error_share_card_generation'), 'error');
+            return;
+        }
+        const safe = Utils.sanitizeText(tracker.name || 'tracker', 50)
+            .replace(/[^\w\sа-яА-ЯёЁ-]/gi, '')
+            .replace(/\s+/g, '_')
+            .slice(0, 40) || 'tracker';
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `30day_${safe}.png`;
+        a.click();
+        Utils.showNotification(I18n.t('notification_share_png_saved'));
+    },
+
+    async copyShareProgressPng() {
+        const canvas = this.shareProgressCanvas;
+        if (!canvas) {
+            Utils.showNotification(I18n.t('error_share_card_generation'), 'error');
+            return;
+        }
+        try {
+            const blob = await new Promise((resolve, reject) => {
+                canvas.toBlob(b => (b ? resolve(b) : reject(new Error('blob'))), 'image/png');
+            });
+            if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+                throw new Error('clipboard');
+            }
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            Utils.showNotification(I18n.t('notification_share_image_copied'));
+        } catch (e) {
+            Utils.showNotification(I18n.t('error_share_image_clipboard'), 'error');
+        }
+    },
+
+    markDay(trackerId, day, cellEl, color) {
+        const preview = document.getElementById('pdf-preview');
+        const trackerDataStr = preview?.dataset.trackerData;
+        if (!preview || !trackerDataStr) return;
+
+        const trackerData = JSON.parse(trackerDataStr);
+        const checkedDays = [...(trackerData.checkedDays || [])];
+        const prevCount = checkedDays.length;
+        const prevBestStreak = TrackerStorage.getBestStreak();
+        const wasChecked = checkedDays.includes(day);
+
+        const checkBox = cellEl.querySelector('.check-box');
+        const icon = checkBox?.querySelector('.fa-check');
+
+        if (wasChecked) {
+            checkedDays.splice(checkedDays.indexOf(day), 1);
+            if (checkBox) {
+                checkBox.style.backgroundColor = 'transparent';
+                checkBox.style.borderColor = '#d1d5db';
+            }
+            if (icon) icon.style.display = 'none';
+            cellEl.style.borderColor = '#e5e7eb';
+        } else {
+            checkedDays.push(day);
+            checkedDays.sort((a, b) => a - b);
+            if (checkBox) {
+                checkBox.style.backgroundColor = color.hex;
+                checkBox.style.borderColor = color.hex;
+            }
+            if (icon) icon.style.display = 'block';
+            cellEl.style.borderColor = color.hex;
+        }
+
+        const newCount = checkedDays.length;
+        trackerData.checkedDays = checkedDays;
+        trackerData.progress = Math.round((newCount / 30) * 100);
+        trackerData.updatedAt = new Date().toISOString();
+        preview.dataset.trackerData = JSON.stringify(trackerData);
+
+        const progressFill = preview.querySelector('.progress-fill');
+        const progressText = preview.querySelectorAll('.text-xs.text-gray-500 span');
+        if (progressFill) progressFill.style.width = trackerData.progress + '%';
+        if (progressText.length >= 2) {
+            progressText[0].textContent = `${newCount} ${I18n.t('of')} 30 ${I18n.t('days')}`;
+            progressText[1].textContent = `${trackerData.progress}%`;
+        }
+        const headerProgress = preview.querySelector('.trecker-header .text-gray-500 .font-bold');
+        if (headerProgress) headerProgress.textContent = `${trackerData.progress}%`;
+        const updatedDateElement = preview.querySelector('.tracker-footer .flex.justify-between p:nth-child(2), .footer .flex.justify-between p:nth-child(2)');
+        if (updatedDateElement) {
+            updatedDateElement.textContent = `${I18n.t('updated')}: ${Utils.formatDate(trackerData.updatedAt)}`;
+        }
+
+        const stored = TrackerStorage.getTracker(trackerId);
+        if (stored) {
+            TrackerStorage.saveTracker({
+                ...stored,
+                checkedDays,
+                progress: trackerData.progress,
+                updatedAt: trackerData.updatedAt
+            });
+        } else {
+            TrackerStorage.updateTrackerDays(trackerId, checkedDays);
+        }
+
+        this.loadTrackers();
+        this.updateStatistics();
+
+        if (!wasChecked && newCount > prevCount) {
+            this.checkMilestones(trackerId, newCount);
+            if (TrackerStorage.getBestStreak() > prevBestStreak) {
+                this.showNewRecordToast();
+            }
+        }
+    },
+
+    checkMilestones(trackerId, completedCount) {
+        if (!MILESTONE_COUNTS.includes(completedCount)) return;
+
+        const tracker = TrackerStorage.getTracker(trackerId);
+        if (!tracker) return;
+
+        const shown = tracker.milestonesShown || [];
+        if (shown.includes(completedCount)) return;
+
+        tracker.milestonesShown = [...shown, completedCount];
+        TrackerStorage.saveTracker(tracker);
+
+        const preview = document.getElementById('pdf-preview');
+        if (preview?.dataset.trackerData) {
+            try {
+                const data = JSON.parse(preview.dataset.trackerData);
+                if (data.id === trackerId) {
+                    data.milestonesShown = tracker.milestonesShown;
+                    preview.dataset.trackerData = JSON.stringify(data);
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        if (completedCount === 30) {
+            this.showMilestoneCelebration();
+        } else {
+            this.showMilestoneToast(completedCount);
+        }
+    },
+
+    showMilestoneToast(dayCount) {
+        const toast = document.getElementById('milestone-toast');
+        const textEl = document.getElementById('milestone-toast-text');
+        if (!toast || !textEl) return;
+
+        textEl.textContent = I18n.t(`milestone_day_${dayCount}`);
+        toast.classList.remove('hidden');
+        toast.classList.remove('milestone-toast--show');
+        void toast.offsetWidth;
+        toast.classList.add('milestone-toast--show');
+
+        if (this._milestoneToastTimer) clearTimeout(this._milestoneToastTimer);
+        this._milestoneToastTimer = setTimeout(() => {
+            toast.classList.remove('milestone-toast--show');
+            setTimeout(() => toast.classList.add('hidden'), 400);
+        }, 4500);
+    },
+
+    showMilestoneCelebration() {
+        const overlay = document.getElementById('milestone-celebration');
+        if (!overlay) return;
+
+        const close = () => {
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        if (!overlay.dataset.bound) {
+            overlay.dataset.bound = '1';
+            document.getElementById('milestone-celebration-close')?.addEventListener('click', close);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) close();
+            });
+        }
+
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    },
+
+    showNewRecordToast() {
+        let el = document.getElementById('record-streak-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'record-streak-toast';
+            el.className = 'record-streak-toast';
+            el.setAttribute('role', 'status');
+            document.body.appendChild(el);
+        }
+        el.textContent = I18n.t('toast_new_streak_record');
+        el.classList.remove('record-streak-toast--show');
+        void el.offsetWidth;
+        el.classList.add('record-streak-toast--show');
+        if (this._recordToastTimer) clearTimeout(this._recordToastTimer);
+        this._recordToastTimer = setTimeout(() => {
+            el.classList.remove('record-streak-toast--show');
+        }, 2000);
     },
     
     checkUrlHash() {
@@ -2115,7 +2882,19 @@ const App = {
         }
 
         this.setFormMode(Boolean(this.editingTrackerId));
-    }
+        this.refreshShareModalIfOpen();
+    },
+
+    refreshShareModalIfOpen() {
+        const modal = document.getElementById('share-tracker-modal');
+        if (!modal || modal.classList.contains('hidden')) return;
+        const cardPanel = document.getElementById('share-panel-card');
+        if (!cardPanel || cardPanel.classList.contains('hidden')) return;
+        const resultWrap = document.getElementById('share-card-result-wrap');
+        if (resultWrap && !resultWrap.classList.contains('hidden') && this.shareProgressCanvas) {
+            void this.generateShareProgressCard();
+        }
+    },
 };
 
 function openModal(modalId) {
@@ -2151,6 +2930,19 @@ function copyShareUrl() {
 
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
+
+   // Переключение видимости секции шаблонов
+    const templatesSection = document.getElementById('templates-section');
+    const toggleBtn = document.getElementById('toggle-templates-btn');
+
+    if (templatesSection && toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            templatesSection.classList.toggle('collapsed');
+            const icon = toggleBtn.querySelector('i');
+            const isCollapsed = templatesSection.classList.contains('collapsed');
+            icon.className = isCollapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        });
+    }
     
     window.openModal = openModal;
     window.closeModal = closeModal;

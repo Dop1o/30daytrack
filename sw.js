@@ -1,4 +1,4 @@
-const CACHE_NAME = '30daytrack-v1.0.7';
+const CACHE_NAME = '30daytrack-v1.0.9';
 const OFFLINE_URL = '/';
 
 const urlsToCache = [
@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Push-уведомления
+// Push из внешнего сервиса (FCM и т.п.); локальные напоминания — через Notification в основном потоке
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const options = {

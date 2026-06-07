@@ -71,7 +71,8 @@ const DataManager = {
                         .filter(t => t.id && t.name && t.category && t.goal && Array.isArray(t.checkedDays))
                         .map(t => ({
                             ...t,
-                            note: typeof t.note === 'string' ? t.note : ''
+                            note: typeof t.note === 'string' ? t.note : '',
+                            milestonesShown: Array.isArray(t.milestonesShown) ? t.milestonesShown : []
                         }));
                     
                     if (validTrackers.length === 0) {
