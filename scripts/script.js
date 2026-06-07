@@ -2914,7 +2914,7 @@ function closeModal(modalId) {
 }
 
 function copyCardNumber() {
-    Utils.copyToClipboard("2202 2055 7513 3944").then(success => {
+    Utils.copyToClipboard("...").then(success => {
         if (success) Utils.showNotification(I18n.t('notification_card_copied'));
     });
 }
