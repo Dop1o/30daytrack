@@ -1401,8 +1401,6 @@ a {
     min-height: 1.25rem;
     line-height: 1.25rem;
     text-align: left !important;
-    grid-row: 3;
-    align-self: end;
 }
 
 .stat-card__meta[aria-hidden="true"] {
