@@ -1,4 +1,4 @@
-const CACHE_NAME = '30daytrack-v1.0.9';
+const CACHE_NAME = '30daytrack-v1.0.11';
 const OFFLINE_URL = '/';
 
 const urlsToCache = [
