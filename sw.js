@@ -22,9 +22,37 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('[SW] Кэширование ресурсов');
-        return cache.addAll(urlsToCache);
+        
+        // Сначала кешируем основные файлы
+        await cache.addAll([
+          '/index.html',  // ← явно указываем index.html
+          '/style.css',
+          '/scripts/script.js',
+          '/scripts/i18n.js',
+          '/scripts/data-manager.js',
+          '/manifest/manifest-ru.json',
+          '/manifest/manifest-en.json',
+          '/images/icon-192.png',
+          '/images/icon-512.png'
+        ]);
+        
+        // Внешние библиотеки пытаемся закешировать, но не падаем при ошибке
+        const externalUrls = [
+          'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+        ];
+        
+        for (const url of externalUrls) {
+          try {
+            await cache.add(url);
+          } catch(e) {
+            console.warn('[SW] Не удалось закешировать внешний ресурс:', url);
+          }
+        }
       })
       .catch((err) => {
         console.error('[SW] Ошибка кэширования:', err);
