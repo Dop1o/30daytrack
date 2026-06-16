@@ -23,7 +23,7 @@ const externalUrls = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-//  УСТАНОВКА с детальным логированием
+//  УСТАНОВКА
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -34,18 +34,17 @@ self.addEventListener('install', (event) => {
         const results = [];
         for (const url of urlsToCache) {
           try {
-            console.log(`[SW] Пытаемся закешировать: ${url}`);
             const response = await fetch(url);
             if (response.ok) {
               await cache.put(url, response);
-              console.log(`[SW] ✅ Успешно: ${url}`);
+              console.log(`[SW] Успешно: ${url}`);
               results.push({ url, status: 'ok' });
             } else {
-              console.warn(`[SW] ⚠️ Ответ не OK (${response.status}): ${url}`);
+    
               results.push({ url, status: 'failed', error: `HTTP ${response.status}` });
             }
           } catch (error) {
-            console.error(`[SW] ❌ Ошибка кэширования: ${url}`, error);
+            console.error(`[SW] Ошибка кэширования: ${url}`, error);
             results.push({ url, status: 'error', error: error.message });
           }
         }
@@ -56,9 +55,9 @@ self.addEventListener('install', (event) => {
         for (const url of externalUrls) {
           try {
             await cache.add(url);
-            console.log(`[SW] ✅ Внешний ресурс: ${url}`);
+            console.log(`[SW] Внешний ресурс: ${url}`);
           } catch (e) {
-            console.warn(`[SW] ⚠️ Внешний ресурс: ${url}`, e);
+            console.warn(`[SW] Внешний ресурс: ${url}`, e);
           }
         }
         
@@ -87,7 +86,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ✅ FETCH с правильной стратегией
+//  FETCH с правильной стратегией
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -101,7 +100,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ✅ HTML - Network First с fallback
+  //  HTML - Network First с fallback
   if (request.mode === 'navigate' || 
       request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
@@ -137,7 +136,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ✅ Статика - Cache First
+  //  Статика - Cache First
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
