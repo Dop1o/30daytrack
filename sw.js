@@ -1,7 +1,7 @@
 const CACHE_NAME = '30daytrack-v1.0.13';
 const OFFLINE_URL = '/';
 
-//  Определяем базовый путь
+// Определяем базовый путь
 const BASE = self.location.pathname.replace(/\/[^/]*$/, '') || '/';
 
 const urlsToCache = [
@@ -17,7 +17,7 @@ const urlsToCache = [
   BASE + 'images/icon-512.png'
 ];
 
-// Внешние ресурсы - отдельно с обработкой ошибок
+// Внешние ресурсы
 const externalUrls = [
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
@@ -25,7 +25,7 @@ const externalUrls = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-//  Установка с правильной обработкой ошибок
+// Установка
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -63,7 +63,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-//  Активация
+// Активация
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -82,7 +82,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-//  Fetch с правильной стратегией
+// Fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -117,7 +117,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  //  Для статики - Cache First с обновлением в фоне
+  // Для статики - Cache First с обновлением в фоне
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -151,15 +151,36 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-//  Push уведомления
+// ✅ ИСПРАВЛЕННЫЙ Push
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  let title = '30-Дневный Трекер';
+  let body = 'Не забудь отметить прогресс сегодня!';
+  
+  if (event.data) {
+    try {
+      // Пробуем получить как JSON
+      data = event.data.json();
+      title = data.title || title;
+      body = data.body || body;
+    } catch {
+      // Если не JSON - используем как текст
+      try {
+        body = event.data.text() || body;
+      } catch {
+        // Если и text() не работает, оставляем fallback
+      }
+    }
+  }
+  
   const options = {
-    body: data.body || 'Не забудь отметить прогресс сегодня!',
+    body: body,
     icon: '/images/icon-192.png',
     badge: '/images/icon-192.png',
     vibrate: [200, 100, 200],
-    data: { url: data.url || '/' },
+    data: {
+      url: data.url || '/'
+    },
     actions: [
       { action: 'open', title: 'Открыть' },
       { action: 'dismiss', title: 'Позже' }
@@ -167,10 +188,11 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification(data.title || '30-Дневный Трекер', options)
+    self.registration.showNotification(title, options)
   );
 });
 
+// Клик по уведомлению
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'dismiss') return;
