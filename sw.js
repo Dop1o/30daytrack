@@ -1,20 +1,18 @@
 const CACHE_NAME = '30daytrack-v1.0.13';
 const OFFLINE_URL = '/';
 
-// Определяем базовый путь
-const BASE = self.location.pathname.replace(/\/[^/]*$/, '') || '/';
-
+// ПРАВИЛЬНЫЕ пути для Vercel
 const urlsToCache = [
-  BASE,
-  BASE + 'index.html',
-  BASE + 'style.css',
-  BASE + 'scripts/script.js',
-  BASE + 'scripts/i18n.js',
-  BASE + 'scripts/data-manager.js',
-  BASE + 'manifest/manifest-ru.json',
-  BASE + 'manifest/manifest-en.json',
-  BASE + 'images/icon-192.png',
-  BASE + 'images/icon-512.png'
+  '/',
+  '/index.html',
+  '/style.css',
+  '/scripts/script.js',
+  '/scripts/i18n.js',
+  '/scripts/data-manager.js',
+  '/manifest/manifest-ru.json',
+  '/manifest/manifest-en.json',
+  '/images/icon-192.png',
+  '/images/icon-512.png'
 ];
 
 // Внешние ресурсы
@@ -25,52 +23,59 @@ const externalUrls = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// Установка
+//  УСТАНОВКА с детальным логированием
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(async (cache) => {
-        console.log('[SW] Кэширование ресурсов');
+        console.log('[SW] Начинаем кэширование...');
         
-        // Кешируем основные файлы с обработкой ошибок
-        try {
-          await cache.addAll(urlsToCache);
-          console.log('[SW] Основные файлы закешированы');
-        } catch (err) {
-          console.error('[SW] Ошибка кеширования основных файлов:', err);
-          // Пытаемся кешировать по отдельности
-          for (const url of urlsToCache) {
-            try {
-              await cache.add(url);
-              console.log('[SW] Успешно закеширован:', url);
-            } catch (e) {
-              console.warn('[SW] Не удалось закешировать:', url, e);
+        // Кэшируем каждый файл по отдельности с логированием
+        const results = [];
+        for (const url of urlsToCache) {
+          try {
+            console.log(`[SW] Пытаемся закешировать: ${url}`);
+            const response = await fetch(url);
+            if (response.ok) {
+              await cache.put(url, response);
+              console.log(`[SW] ✅ Успешно: ${url}`);
+              results.push({ url, status: 'ok' });
+            } else {
+              console.warn(`[SW] ⚠️ Ответ не OK (${response.status}): ${url}`);
+              results.push({ url, status: 'failed', error: `HTTP ${response.status}` });
             }
+          } catch (error) {
+            console.error(`[SW] ❌ Ошибка кэширования: ${url}`, error);
+            results.push({ url, status: 'error', error: error.message });
           }
         }
         
-        // Кешируем внешние ресурсы
+        console.log('[SW] Результаты кэширования:', results);
+        
+        // Кэшируем внешние ресурсы
         for (const url of externalUrls) {
           try {
             await cache.add(url);
-            console.log('[SW] Внешний ресурс закеширован:', url);
+            console.log(`[SW] ✅ Внешний ресурс: ${url}`);
           } catch (e) {
-            console.warn('[SW] Не удалось закешировать внешний ресурс:', url);
+            console.warn(`[SW] ⚠️ Внешний ресурс: ${url}`, e);
           }
         }
+        
+        console.log('[SW] Кэширование завершено');
       })
   );
   self.skipWaiting();
 });
 
-// Активация
+// АКТИВАЦИЯ
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Удаляем старый кеш:', cacheName);
+            console.log('[SW] Удаляем старый кэш:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -82,22 +87,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch
+// ✅ FETCH с правильной стратегией
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   if (request.method !== 'GET') return;
 
-  // Пропускаем аналитику
+  // Пропускаем аналитику и внешние API
   if (url.hostname.includes('google-analytics') || 
       url.hostname.includes('googletagmanager') ||
       url.hostname.includes('vercel')) {
     return;
   }
 
-  // Стратегия для HTML - Network First с fallback
-  if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+  // ✅ HTML - Network First с fallback
+  if (request.mode === 'navigate' || 
+      request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -109,19 +115,33 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          console.warn('[SW] Офлайн режим, показываем кешированную страницу');
-          return caches.match(OFFLINE_URL) || caches.match('/index.html');
+        .catch(async () => {
+          console.warn('[SW] Офлайн, ищем в кэше...');
+          const cached = await caches.match(request);
+          if (cached) {
+            console.log('[SW] ✅ Найдено в кэше');
+            return cached;
+          }
+          const offlinePage = await caches.match('/index.html');
+          if (offlinePage) {
+            console.log('[SW] ✅ Показываем index.html');
+            return offlinePage;
+          }
+          console.error('[SW] ❌ Ничего не найдено в кэше');
+          return new Response('Страница недоступна в офлайн режиме', { 
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+          });
         })
     );
     return;
   }
 
-  // Для статики - Cache First с обновлением в фоне
+  // ✅ Статика - Cache First
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Обновляем кеш в фоне
+        // Обновляем в фоне
         fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
@@ -150,31 +170,12 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
-
-// ✅ ИСПРАВЛЕННЫЙ Push
+  
+// Push из внешнего сервиса (FCM и т.п.); локальные напоминания — через Notification в основном потоке
 self.addEventListener('push', (event) => {
-  let data = {};
-  let title = '30-Дневный Трекер';
-  let body = 'Не забудь отметить прогресс сегодня!';
-  
-  if (event.data) {
-    try {
-      // Пробуем получить как JSON
-      data = event.data.json();
-      title = data.title || title;
-      body = data.body || body;
-    } catch {
-      // Если не JSON - используем как текст
-      try {
-        body = event.data.text() || body;
-      } catch {
-        // Если и text() не работает, оставляем fallback
-      }
-    }
-  }
-  
+  const data = event.data ? event.data.json() : {};
   const options = {
-    body: body,
+    body: data.body || 'Не забудь отметить прогресс сегодня!',
     icon: '/images/icon-192.png',
     badge: '/images/icon-192.png',
     vibrate: [200, 100, 200],
@@ -188,13 +189,14 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    self.registration.showNotification(data.title || '30-Дневный Трекер', options)
   );
 });
 
 // Клик по уведомлению
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  
   if (event.action === 'dismiss') return;
   
   event.waitUntil(
