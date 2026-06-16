@@ -1,8 +1,8 @@
-const CACHE_NAME = '30daytrack-v1.0.13';
+const CACHE_NAME = '30daytrack-v1.0.14';
 const OFFLINE_URL = '/';
 
-// ПРАВИЛЬНЫЕ пути для Vercel
-const urlsToCache = [
+//  Четкое разделение CORE и EXTERNAL
+const CORE = [
   '/',
   '/index.html',
   '/style.css',
@@ -15,166 +15,160 @@ const urlsToCache = [
   '/images/icon-512.png'
 ];
 
-// Внешние ресурсы
-const externalUrls = [
+const EXTERNAL = [
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-//  УСТАНОВКА
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(async (cache) => {
-        console.log('[SW] Начинаем кэширование...');
-        
-        // Кэшируем каждый файл по отдельности с логированием
-        const results = [];
-        for (const url of urlsToCache) {
-          try {
-            const response = await fetch(url);
-            if (response.ok) {
-              await cache.put(url, response);
-              console.log(`[SW] Успешно: ${url}`);
-              results.push({ url, status: 'ok' });
-            } else {
-    
-              results.push({ url, status: 'failed', error: `HTTP ${response.status}` });
-            }
-          } catch (error) {
-            console.error(`[SW] Ошибка кэширования: ${url}`, error);
-            results.push({ url, status: 'error', error: error.message });
-          }
-        }
-        
-        console.log('[SW] Результаты кэширования:', results);
-        
-        // Кэшируем внешние ресурсы
-        for (const url of externalUrls) {
-          try {
-            await cache.add(url);
-            console.log(`[SW] Внешний ресурс: ${url}`);
-          } catch (e) {
-            console.warn(`[SW] Внешний ресурс: ${url}`, e);
-          }
-        }
-        
-        console.log('[SW] Кэширование завершено');
-      })
+//  INSTALL
+self.addEventListener('install', function (e) {
+  console.log('[SW] Install', CACHE_NAME);
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(function (cache) {
+      console.log('[SW] Caching core assets');
+      return cache.addAll(CORE).catch(function (err) {
+        console.error('[SW] Cache addAll error:', err);
+      });
+    }).then(function () {
+      return caches.open(CACHE_NAME + '-external').then(function (extCache) {
+        return Promise.allSettled(
+          EXTERNAL.map(function (url) {
+            return fetch(url, { mode: 'no-cors' })
+              .then(function (response) {
+                if (response.ok || response.type === 'opaque') {
+                  return extCache.put(url, response);
+                }
+              })
+              .catch(function (err) {
+                console.warn('[SW] Failed to cache external:', url, err);
+              });
+          })
+        );
+      });
+    }).then(function () {
+      console.log('[SW] Install complete, skipping waiting');
+      return self.skipWaiting();
+    })
   );
-  self.skipWaiting();
 });
 
-// АКТИВАЦИЯ
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
+//  ACTIVATE
+self.addEventListener('activate', function (e) {
+  console.log('[SW] Activate', CACHE_NAME);
+  e.waitUntil(
+    caches.keys().then(function (keys) {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Удаляем старый кэш:', cacheName);
-            return caches.delete(cacheName);
-          }
+        keys.filter(function (key) {
+          return key.startsWith('30daytrack-') && key !== CACHE_NAME && key !== CACHE_NAME + '-external';
+        }).map(function (key) {
+          console.log('[SW] Deleting old cache:', key);
+          return caches.delete(key);
         })
       );
-    }).then(() => {
-      console.log('[SW] Активирован, захватываем клиентов');
+    }).then(function () {
+      console.log('[SW] Claiming clients');
       return self.clients.claim();
     })
   );
 });
 
-//  FETCH с правильной стратегией
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  if (request.method !== 'GET') return;
-
-  // Пропускаем аналитику и внешние API
-  if (url.hostname.includes('google-analytics') || 
-      url.hostname.includes('googletagmanager') ||
-      url.hostname.includes('vercel')) {
-    return;
-  }
-
-  //  HTML - Network First с fallback
-  if (request.mode === 'navigate' || 
-      request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
+//  FETCH
+self.addEventListener('fetch', function (e) {
+  var url = new URL(e.request.url);
+  
+  if (e.request.method !== 'GET') return;
+  
+  // API запросы - Network First
+  if (url.hostname.includes('exchangerate-api.com')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(function (response) {
           return response;
         })
-        .catch(async () => {
-          console.warn('[SW] Офлайн, ищем в кэше...');
-          const cached = await caches.match(request);
-          if (cached) {
-            console.log('[SW] ✅ Найдено в кэше');
-            return cached;
-          }
-          const offlinePage = await caches.match('/index.html');
-          if (offlinePage) {
-            console.log('[SW] ✅ Показываем index.html');
-            return offlinePage;
-          }
-          console.error('[SW] ❌ Ничего не найдено в кэше');
-          return new Response('Страница недоступна в офлайн режиме', { 
+        .catch(function () {
+          return new Response(JSON.stringify({ error: 'offline' }), {
             status: 503,
-            headers: { 'Content-Type': 'text/plain' }
+            headers: { 'Content-Type': 'application/json' }
           });
         })
     );
     return;
   }
-
-  //  Статика - Cache First
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Обновляем в фоне
-        fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, networkResponse);
+  
+  //  Локальные ресурсы: Cache First, затем Network
+  if (url.origin === self.location.origin) {
+    e.respondWith(
+      caches.match(e.request).then(function (cached) {
+        if (cached) {
+          return cached;
+        }
+        
+        return fetch(e.request).then(function (response) {
+          if (response && response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(e.request, clone);
             });
           }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-      
-      return fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Fallback для изображений
-        if (request.destination === 'image') {
-          return new Response('', { status: 204 });
-        }
-        return new Response('Offline', { status: 503 });
-      });
-    })
-  );
-});
+          return response;
+        }).catch(function () {
+          //  Важно! Для навигации показываем index.html
+          if (e.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          throw new Error('Network unavailable');
+        });
+      })
+    );
+    return;
+  }
   
-// Push из внешнего сервиса (FCM и т.п.); локальные напоминания — через Notification в основном потоке
+  //  Внешние CDN: Stale-While-Revalidate
+  if (EXTERNAL.some(function (ext) { return url.href.startsWith(ext); })) {
+    e.respondWith(
+      caches.open(CACHE_NAME + '-external').then(function (cache) {
+        return cache.match(e.request).then(function (cached) {
+          var fetchPromise = fetch(e.request)
+            .then(function (response) {
+              if (response && response.ok) {
+                cache.put(e.request, response.clone());
+              }
+              return response;
+            })
+            .catch(function () {});
+          
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+  
+  e.respondWith(fetch(e.request));
+});
+
+//  PUSH - с безопасной обработкой
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  let title = '30-Дневный Трекер';
+  let body = 'Не забудь отметить прогресс сегодня!';
+  
+  if (event.data) {
+    try {
+      data = event.data.json();
+      title = data.title || title;
+      body = data.body || body;
+    } catch {
+      try {
+        body = event.data.text() || body;
+      } catch {}
+    }
+  }
+  
   const options = {
-    body: data.body || 'Не забудь отметить прогресс сегодня!',
+    body: body,
     icon: '/images/icon-192.png',
     badge: '/images/icon-192.png',
     vibrate: [200, 100, 200],
@@ -188,14 +182,13 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification(data.title || '30-Дневный Трекер', options)
+    self.registration.showNotification(title, options)
   );
 });
 
-// Клик по уведомлению
+//  NOTIFICATION CLICK
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
   if (event.action === 'dismiss') return;
   
   event.waitUntil(
